@@ -101,7 +101,7 @@ prepare() {
   
   # Misc patches
   patch -Np1 -i "${srcdir}/0020-fix-anbox.patch"
-  patch -Np1 -i "${srcdir}/0020-overclock.patch"
+  patch -Np1 -i "${srcdir}/0021-overclock.patch"
 
   cat "${srcdir}/config" > ./.config
 
