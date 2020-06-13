@@ -39,6 +39,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0011-bootsplash.patch'
         '0012-bootsplash.patch'
 	'0020-fix-anbox.patch'
+	'0021-overclock.patch')
 md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
          '7dbd8df264550584e43dfc512c2b9acd'
          '6ee347975dca719ecd63a846cc5983b2'
@@ -64,8 +65,8 @@ md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
          '1922e3a7727d2bf51641b98d6d354738'
          'd6b7e4e43e42128cf950251e0d0aee23'
          'ecfd8a30c480149005fcf349e4d06f4b'
-	 'd1aa0f11cdc0f2862458252f77a16f05')
-
+	 'd1aa0f11cdc0f2862458252f77a16f05'
+	 'a6f42e9dae98f9386dab5c5eecb0169e')
 
 prepare() {
   cd ${_srcname}
@@ -100,6 +101,7 @@ prepare() {
   
   # Misc patches
   patch -Np1 -i "${srcdir}/0020-fix-anbox.patch"
+  patch -Np1 -i "${srcdir}/0020-overclock.patch"
 
   cat "${srcdir}/config" > ./.config
 
