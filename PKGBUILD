@@ -37,7 +37,8 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0009-bootsplash.patch'
         '0010-bootsplash.patch'
         '0011-bootsplash.patch'
-        '0012-bootsplash.patch')
+        '0012-bootsplash.patch'
+	'0020-fix-anbox.patch'
 md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
          '7dbd8df264550584e43dfc512c2b9acd'
          '6ee347975dca719ecd63a846cc5983b2'
@@ -62,7 +63,8 @@ md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
          '6b6def41b404422dc04b39e2f1adffc8'
          '1922e3a7727d2bf51641b98d6d354738'
          'd6b7e4e43e42128cf950251e0d0aee23'
-         'ecfd8a30c480149005fcf349e4d06f4b')
+         'ecfd8a30c480149005fcf349e4d06f4b'
+	 'd1aa0f11cdc0f2862458252f77a16f05')
 
 
 prepare() {
@@ -74,7 +76,7 @@ prepare() {
   # ALARM patches
   patch -Np1 -i "${srcdir}/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch"     #All
   
-  # Manjaro ARM Patches
+  # Manjaro ARM patches
   patch -Np1 -i "${srcdir}/0009-drivers-power-supply-Add-support-for-cw2015.patch"              #Pinebook Pro (added in 5.8)
   patch -Np1 -i "${srcdir}/0010-arm64-dts-rockchip-add-cw2015-node-to-PBP.patch"                #Pinebook Pro
   patch -Np1 -i "${srcdir}/0011-fix-wonky-wifi-bt-on-PBP.patch"                                 #Pinebook Pro
@@ -96,6 +98,9 @@ prepare() {
   patch -Np1 -i "${srcdir}/0011-bootsplash.patch"
   patch -Np1 -i "${srcdir}/0012-bootsplash.patch"
   
+  # Misc patches
+  patch -Np1 -i "${srcdir}/0020-fix-anbox.patch"
+
   cat "${srcdir}/config" > ./.config
 
   # add pkgrel to extraversion
