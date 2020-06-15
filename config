@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm64 5.7.2 Kernel Configuration
+# Linux/arm64 5.7.2-2 Kernel Configuration
 #
 
 #
@@ -7484,6 +7484,8 @@ CONFIG_VIDEO_USBVISION=m
 #
 # Android
 #
+CONFIG_ASHMEM=y
+# CONFIG_ION is not set
 # end of Android
 
 # CONFIG_STAGING_BOARD is not set
@@ -8667,7 +8669,11 @@ CONFIG_RAS=y
 #
 # Android
 #
-# CONFIG_ANDROID is not set
+CONFIG_ANDROID=y
+CONFIG_ANDROID_BINDER_IPC=y
+CONFIG_ANDROID_BINDERFS=y
+CONFIG_ANDROID_BINDER_DEVICES="binder,hwbinder,vndbinder"
+# CONFIG_ANDROID_BINDER_IPC_SELFTEST is not set
 # end of Android
 
 CONFIG_LIBNVDIMM=y

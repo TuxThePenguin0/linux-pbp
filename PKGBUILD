@@ -38,8 +38,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0010-bootsplash.patch'
         '0011-bootsplash.patch'
         '0012-bootsplash.patch'
-	'0020-fix-anbox.patch'
-	'0021-overclock.patch')
+	'0020-overclock.patch')
 md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
          '7dbd8df264550584e43dfc512c2b9acd'
          '6ee347975dca719ecd63a846cc5983b2'
@@ -49,7 +48,7 @@ md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
          '1ac243c06d58a2e6fe23e9934a9fcbcb'
          '4993c45194869f54a187942cb04dea0e'
          'fa88f0acd760bae15f8ae71518cea8b3'
-         '6bd33be4d3e3b739dc656ca2d7e84257'
+         'a694e35e9a98bb42683fd9e201368e1d'
          '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
          '3dc88030a8f2f5a5f97266d99b149f77'
@@ -65,7 +64,6 @@ md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
          '1922e3a7727d2bf51641b98d6d354738'
          'd6b7e4e43e42128cf950251e0d0aee23'
          'ecfd8a30c480149005fcf349e4d06f4b'
-	 'd1aa0f11cdc0f2862458252f77a16f05'
 	 'a6f42e9dae98f9386dab5c5eecb0169e')
 
 prepare() {
@@ -100,8 +98,7 @@ prepare() {
   patch -Np1 -i "${srcdir}/0012-bootsplash.patch"
   
   # Misc patches
-  patch -Np1 -i "${srcdir}/0020-fix-anbox.patch"
-  patch -Np1 -i "${srcdir}/0021-overclock.patch"
+  patch -Np1 -i "${srcdir}/0020-overclock.patch"
 
   cat "${srcdir}/config" > ./.config
 
