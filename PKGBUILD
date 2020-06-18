@@ -15,6 +15,7 @@ makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' '
 options=('!strip')
 source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         "http://www.kernel.org/pub/linux/kernel/v5.x/patch-${pkgver}.xz"
+        'config'
         '0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch'
         '0009-drivers-power-supply-Add-support-for-cw2015.patch'
         '0010-arm64-dts-rockchip-add-cw2015-node-to-PBP.patch'
@@ -22,7 +23,6 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0012-add-suspend-to-rk3399-PBP.patch'
         '0013-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch'
 	'0015-add-dp-alt-mode-to-PBP.patch'
-        'config'
         'linux.preset'
         '60-linux.hook'
 	'90-linux.hook'
@@ -40,7 +40,8 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0012-bootsplash.patch'
 	'0020-overclock.patch')
 md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
-         '7dbd8df264550584e43dfc512c2b9acd'
+         '9104be9e2065896fd2825632782815bb'
+	 '3a278e6000834bd9aef2fe56b26eed9e'
          '6ee347975dca719ecd63a846cc5983b2'
          'd235bd43604bba10d878e066d80846ef'
          '7ca26d7c90227224769e176043dd7fa9'
@@ -48,7 +49,6 @@ md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
          '1ac243c06d58a2e6fe23e9934a9fcbcb'
          '4993c45194869f54a187942cb04dea0e'
          'fa88f0acd760bae15f8ae71518cea8b3'
-         'a694e35e9a98bb42683fd9e201368e1d'
          '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
          '3dc88030a8f2f5a5f97266d99b149f77'
