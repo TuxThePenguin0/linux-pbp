@@ -6,8 +6,8 @@ pkgbase=linux-pbp
 _srcname=linux-5.7
 _kernelname=${pkgbase#linux}
 _desc="Linux kernel with patches for the Pinebook Pro."
-pkgver=5.7.3
-pkgrel=3
+pkgver=5.7.4
+pkgrel=1
 arch=('aarch64')
 url="http://www.kernel.org/"
 license=('GPL2')
@@ -40,7 +40,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0012-bootsplash.patch'
 	'0020-overclock.patch')
 md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
-         '9104be9e2065896fd2825632782815bb'
+         '5e4024cce46e2b4e7fba475232da2a4d'
 	 '3a278e6000834bd9aef2fe56b26eed9e'
          '6ee347975dca719ecd63a846cc5983b2'
          'd235bd43604bba10d878e066d80846ef'
