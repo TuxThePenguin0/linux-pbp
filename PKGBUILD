@@ -2,10 +2,13 @@
 # Contributor: Kevin Mihelich <kevin@archlinuxarm.org>
 # Maintainer: Dan Johansen <strit@manjaro.org>
 
-pkgbase=linux-pbp
+_pkgname=linux-pbp
+pkgbase=${_pkgname}-tux
+provides=("${_pkgname}")
+conflicts=("${_pkgname}")
 _srcname=linux-5.7
 _kernelname=${pkgbase#linux}
-_desc="Linux kernel with patches for the Pinebook Pro."
+_desc="Customised Linux kernel with patches for the Pinebook Pro."
 pkgver=5.7.6
 pkgrel=1
 arch=('aarch64')
