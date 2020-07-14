@@ -9,7 +9,7 @@ conflicts=("${_pkgname}")
 _srcname=linux-5.7
 _kernelname=${pkgbase#linux}
 _desc="Customised Linux kernel with patches for the Pinebook Pro."
-pkgver=5.7.7
+pkgver=5.7.8
 pkgrel=1
 arch=('aarch64')
 url="http://www.kernel.org/"
@@ -43,7 +43,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0012-bootsplash.patch'
 	'0020-overclock.patch')
 md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
-         '6103451d140cfb4862b45cde2217543c'
+         '28fd3a3891a4863a70d4f579fb69e478'
 	 '3a278e6000834bd9aef2fe56b26eed9e'
          '6ee347975dca719ecd63a846cc5983b2'
          'd235bd43604bba10d878e066d80846ef'
