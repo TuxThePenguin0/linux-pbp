@@ -6,10 +6,10 @@ _pkgname=linux-pbp
 pkgbase=${_pkgname}-tux
 provides=("${_pkgname}")
 conflicts=("${_pkgname}")
-_srcname=linux-5.7
+_srcname=linux-5.8
 _kernelname=${pkgbase#linux}
 _desc="Customised Linux kernel with patches for the Pinebook Pro."
-pkgver=5.7.9
+pkgver=5.8.0
 pkgrel=1
 arch=('aarch64')
 url="http://www.kernel.org/"
@@ -17,91 +17,55 @@ license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'dtc')
 options=('!strip')
 source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
-        "http://www.kernel.org/pub/linux/kernel/v5.x/patch-${pkgver}.xz"
+        '0004-tty-serdev-support-shutdown-op.patch'
+        '0005-bluetooth-hci_serdev-Clear-registered-bit-on-unregis.patch'
+        '0006-bluetooth-hci_bcm-disable-power-on-shutdown.patch'
+        '0007-mmc-core-pwrseq_simple-disable-mmc-power-on-shutdown.patch'
+        '0010-usb-typec-tcpm-add-hacky-generic-altmode-support.patch'
+        '0011-phy-rockchip-typec-Set-extcon-capabilities.patch'
+        '0012-usb-typec-altmodes-displayport-Add-hacky-generic-alt.patch'
+        '0018-arm64-dts-rockchip-add-cw2015-fuel-gauge.patch'
+        '0021-arm64-dts-rockchip-add-typec-extcon-hack.patch'
+        '0024-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch'
         'config'
-        '0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch'
-        '0009-drivers-power-supply-Add-support-for-cw2015.patch'
-        '0010-arm64-dts-rockchip-add-cw2015-node-to-PBP.patch'
-        '0011-fix-wonky-wifi-bt-on-PBP.patch'
-        '0012-add-suspend-to-rk3399-PBP.patch'
-        '0013-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch'
-	'0015-add-dp-alt-mode-to-PBP.patch'
         'linux.preset'
         '60-linux.hook'
-	'90-linux.hook'
-	'0001-bootsplash.patch'
-        '0002-bootsplash.patch'
-        '0003-bootsplash.patch'
-        '0004-bootsplash.patch'
-        '0005-bootsplash.patch'
-        '0006-bootsplash.patch'
-        '0007-bootsplash.patch'
-        '0008-bootsplash.patch'
-        '0009-bootsplash.patch'
-        '0010-bootsplash.patch'
-        '0011-bootsplash.patch'
-        '0012-bootsplash.patch'
-	'0020-overclock.patch')
-md5sums=('f63ed18935914e1ee3e04c2a0ce1ba3b'
-         'bab9a61bbf2aff4d304ab617d8bfd206'
-	 '3a278e6000834bd9aef2fe56b26eed9e'
-         '6ee347975dca719ecd63a846cc5983b2'
-         'd235bd43604bba10d878e066d80846ef'
-         '7ca26d7c90227224769e176043dd7fa9'
-         'ad3ba520c225abe8be59f271a4a23dc1'
-         '1ac243c06d58a2e6fe23e9934a9fcbcb'
-         '4993c45194869f54a187942cb04dea0e'
-         'fa88f0acd760bae15f8ae71518cea8b3'
+        '90-linux.hook'
+        'overclock.patch')
+md5sums=('0e5c4c15266218ef26c50fac0016095b'
+         '11e653f50135c1e9fa703118fa7f2623'
+         '05c7919f7fc1019e99e6965559bde5d5'
+         '894a88a9579b22c22747b1748f181bb9'
+         '610a4e1484a1874b272ff6d8292f5931'
+         'cae6d2c56b98a1dfa387987166441440'
+         'b03bc41f9434564dba2ee414c679afae'
+         'fe3d7fc55581ecc3be73b25d4451f81d'
+         'f97ff1529a78b8eaf94922c3e8b72109'
+         '8c37f21fa687479dbee0cd40299cd79c'
+         '73803b563b9e794a3b495524de99ced7'
+         '0b74783bbf540b682ab03f8ff8248919'
          '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
          '3dc88030a8f2f5a5f97266d99b149f77'
-         'f13cfcd8a4667ecca68bccefee4b8283'
-         'b4acd66a564af83b5409738c40b4a566'
-         'a6407dceae1838f5aa27450401a91be6'
-         'cb78b1c11b917a4d31c4b1567183b76f'
-         '3efea575da7f02ba94789d3b6b81e11f'
-         '2529ad13791b259d80c9d5d702187a65'
-         'efd2367798cc4eab0e15fc0ae44fb003'
-         '50255aac36e002afa477e4527a0550af'
-         '6b6def41b404422dc04b39e2f1adffc8'
-         '1922e3a7727d2bf51641b98d6d354738'
-         'd6b7e4e43e42128cf950251e0d0aee23'
-         'ecfd8a30c480149005fcf349e4d06f4b'
-	 'a6f42e9dae98f9386dab5c5eecb0169e')
+         'a6f42e9dae98f9386dab5c5eecb0169e')
 
 prepare() {
   cd ${_srcname}
 
   # add upstream patch
-  patch -Np1 -i "${srcdir}/patch-${pkgver}"
+  patch -Np1 -i "${srcdir}/0004-tty-serdev-support-shutdown-op.patch"
+  patch -Np1 -i "${srcdir}/0005-bluetooth-hci_serdev-Clear-registered-bit-on-unregis.patch"
+  patch -Np1 -i "${srcdir}/0006-bluetooth-hci_bcm-disable-power-on-shutdown.patch"
+  patch -Np1 -i "${srcdir}/0007-mmc-core-pwrseq_simple-disable-mmc-power-on-shutdown.patch"
+  patch -Np1 -i "${srcdir}/0010-usb-typec-tcpm-add-hacky-generic-altmode-support.patch"
+  patch -Np1 -i "${srcdir}/0011-phy-rockchip-typec-Set-extcon-capabilities.patch"
+  patch -Np1 -i "${srcdir}/0012-usb-typec-altmodes-displayport-Add-hacky-generic-alt.patch"
+  patch -Np1 -i "${srcdir}/0018-arm64-dts-rockchip-add-cw2015-fuel-gauge.patch"
+  patch -Np1 -i "${srcdir}/0021-arm64-dts-rockchip-add-typec-extcon-hack.patch"
+  patch -Np1 -i "${srcdir}/0024-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch"
 
-  # ALARM patches
-  patch -Np1 -i "${srcdir}/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch"     #All
-  
-  # Manjaro ARM patches
-  patch -Np1 -i "${srcdir}/0009-drivers-power-supply-Add-support-for-cw2015.patch"              #Pinebook Pro (added in 5.8)
-  patch -Np1 -i "${srcdir}/0010-arm64-dts-rockchip-add-cw2015-node-to-PBP.patch"                #Pinebook Pro
-  patch -Np1 -i "${srcdir}/0011-fix-wonky-wifi-bt-on-PBP.patch"                                 #Pinebook Pro
-  patch -Np1 -i "${srcdir}/0012-add-suspend-to-rk3399-PBP.patch"                                #Pinebook Pro
-  patch -Np1 -i "${srcdir}/0013-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch"     #Pinebook Pro
-  patch -Np1 -i "${srcdir}/0015-add-dp-alt-mode-to-PBP.patch"
-
-  # Bootsplash patches
-  patch -Np1 -i "${srcdir}/0001-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0002-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0003-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0004-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0005-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0006-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0007-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0008-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0009-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0010-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0011-bootsplash.patch"
-  patch -Np1 -i "${srcdir}/0012-bootsplash.patch"
-  
-  # Misc patches
-  patch -Np1 -i "${srcdir}/0020-overclock.patch"
+  # Overclock
+  patch -Np1 -i "${srcdir}/overclock.patch"
 
   cat "${srcdir}/config" > ./.config
 
