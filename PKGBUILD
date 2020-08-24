@@ -6,7 +6,7 @@ _pkgname=linux-pbp
 pkgbase=${_pkgname}-tux
 provides=("${_pkgname}")
 conflicts=("${_pkgname}")
-_srcname=linux-5.8
+_srcname=linux-5.8.2
 _kernelname=${pkgbase#linux}
 _desc="Customised Linux kernel with patches for the Pinebook Pro."
 pkgver=5.8.0
@@ -17,6 +17,7 @@ license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'dtc')
 options=('!strip')
 source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
+        "http://www.kernel.org/pub/linux/kernel/v5.x/patch-${pkgver}.xz"
         '0004-tty-serdev-support-shutdown-op.patch'
         '0005-bluetooth-hci_serdev-Clear-registered-bit-on-unregis.patch'
         '0006-bluetooth-hci_bcm-disable-power-on-shutdown.patch'
@@ -33,6 +34,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '90-linux.hook'
         'overclock.patch')
 md5sums=('0e5c4c15266218ef26c50fac0016095b'
+         '6e5eb28b78eaec5f3d01946a380242d5'
          '11e653f50135c1e9fa703118fa7f2623'
          '05c7919f7fc1019e99e6965559bde5d5'
          '894a88a9579b22c22747b1748f181bb9'
@@ -53,6 +55,8 @@ prepare() {
   cd ${_srcname}
 
   # add upstream patch
+  patch -Np1 -i "${srcdir}/patch-${pkgver}"
+
   patch -Np1 -i "${srcdir}/0004-tty-serdev-support-shutdown-op.patch"
   patch -Np1 -i "${srcdir}/0005-bluetooth-hci_serdev-Clear-registered-bit-on-unregis.patch"
   patch -Np1 -i "${srcdir}/0006-bluetooth-hci_bcm-disable-power-on-shutdown.patch"
