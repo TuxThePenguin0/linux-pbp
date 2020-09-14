@@ -9,7 +9,7 @@ conflicts=("${_pkgname}")
 _srcname=linux-5.8
 _kernelname=${pkgbase#linux}
 _desc="Customised Linux kernel with patches for the Pinebook Pro."
-pkgver=5.8.2
+pkgver=5.8.9
 pkgrel=1
 arch=('aarch64')
 url="http://www.kernel.org/"
@@ -34,7 +34,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '90-linux.hook'
         'overclock.patch')
 md5sums=('0e5c4c15266218ef26c50fac0016095b'
-         '6e5eb28b78eaec5f3d01946a380242d5'
+         '76f0d7bc98014e70f9d3dd56dca08bd4'
          '11e653f50135c1e9fa703118fa7f2623'
          '05c7919f7fc1019e99e6965559bde5d5'
          '894a88a9579b22c22747b1748f181bb9'
@@ -45,11 +45,11 @@ md5sums=('0e5c4c15266218ef26c50fac0016095b'
          'f97ff1529a78b8eaf94922c3e8b72109'
          '8c37f21fa687479dbee0cd40299cd79c'
          '73803b563b9e794a3b495524de99ced7'
-         '0b74783bbf540b682ab03f8ff8248919'
+         '17ed63f16a40539f1dd3b0277299fe66'
          '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
          '3dc88030a8f2f5a5f97266d99b149f77'
-         'a6f42e9dae98f9386dab5c5eecb0169e')
+         '81d70a76169189a6f029ef717cedcf4d')
 
 prepare() {
   cd ${_srcname}

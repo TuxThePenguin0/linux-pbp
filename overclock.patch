@@ -79,7 +79,7 @@ diff -ru a/arch/arm64/boot/dts/rockchip/rk3399-opp.dtsi b/arch/arm64/boot/dts/ro
  		};
  		opp04 {
  			opp-hz = /bits/ 64 <600000000>;
-@@ -99,7 +116,15 @@
+@@ -99,7 +116,11 @@
  		};
  		opp05 {
  			opp-hz = /bits/ 64 <800000000>;
