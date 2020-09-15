@@ -28,6 +28,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0018-arm64-dts-rockchip-add-cw2015-fuel-gauge.patch'
         '0021-arm64-dts-rockchip-add-typec-extcon-hack.patch'
         '0024-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch'
+        'set-trampoline-flags-regardless.patch'
         'config'
         'linux.preset'
         '60-linux.hook'
@@ -45,6 +46,7 @@ md5sums=('0e5c4c15266218ef26c50fac0016095b'
          'f97ff1529a78b8eaf94922c3e8b72109'
          '8c37f21fa687479dbee0cd40299cd79c'
          '73803b563b9e794a3b495524de99ced7'
+         '59d057f24c26aa114f37961f898d9679'
          'e2dc83cc23ceee7b88fd439cb6bfe78c'
          '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
@@ -67,6 +69,9 @@ prepare() {
   patch -Np1 -i "${srcdir}/0018-arm64-dts-rockchip-add-cw2015-fuel-gauge.patch"
   patch -Np1 -i "${srcdir}/0021-arm64-dts-rockchip-add-typec-extcon-hack.patch"
   patch -Np1 -i "${srcdir}/0024-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch"
+
+  # Fix on binutils 2.35
+  patch -Np1 -i "${srcdir}/set-trampoline-flags-regardless.patch"
 
   # Overclock
   patch -Np1 -i "${srcdir}/overclock.patch"
