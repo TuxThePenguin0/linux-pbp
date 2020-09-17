@@ -1,0 +1,12 @@
+diff --color -ruN a/arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dts b/arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dts
+--- a/arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dts	2020-09-18 09:25:53.720000702 +1000
++++ b/arch/arm64/boot/dts/rockchip/rk3399-pinebook-pro.dts	2020-09-18 09:24:39.050000666 +1000
+@@ -89,7 +89,7 @@
+ 			debounce-interval = <20>;
+ 			gpios = <&gpio0 RK_PA5 GPIO_ACTIVE_LOW>;
+ 			label = "Power";
+-			linux,code = <KEY_POWER>;
++			linux,code = <KEY_DELETE>;
+ 			wakeup-source;
+ 		};
+ 	};
