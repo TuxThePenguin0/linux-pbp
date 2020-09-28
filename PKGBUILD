@@ -9,7 +9,7 @@ conflicts=("${_pkgname}")
 _srcname=linux-5.8
 _kernelname=${pkgbase#linux}
 _desc="Customised Linux kernel with patches for the Pinebook Pro."
-pkgver=5.8.9
+pkgver=5.8.10
 pkgrel=1
 arch=('aarch64')
 url="http://www.kernel.org/"
@@ -28,7 +28,6 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0018-arm64-dts-rockchip-add-cw2015-fuel-gauge.patch'
         '0021-arm64-dts-rockchip-add-typec-extcon-hack.patch'
         '0024-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch'
-        'set-trampoline-flags-regardless.patch'
         'overclock.patch'
         'pbp-power-button-as-delete.patch'
         'config'
@@ -36,7 +35,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '60-linux.hook'
         '90-linux.hook')
 md5sums=('0e5c4c15266218ef26c50fac0016095b'
-         '76f0d7bc98014e70f9d3dd56dca08bd4'
+         '52ae69804bafe1df6aca5f422e2de2da'
          '11e653f50135c1e9fa703118fa7f2623'
          '05c7919f7fc1019e99e6965559bde5d5'
          '894a88a9579b22c22747b1748f181bb9'
@@ -47,7 +46,6 @@ md5sums=('0e5c4c15266218ef26c50fac0016095b'
          'f97ff1529a78b8eaf94922c3e8b72109'
          '8c37f21fa687479dbee0cd40299cd79c'
          '73803b563b9e794a3b495524de99ced7'
-         '59d057f24c26aa114f37961f898d9679'
          '81d70a76169189a6f029ef717cedcf4d'
          '3fd917748d2d2843120fa6f2d56c5c5f'
          '607f5045801508b5a47952959e75dc32'
@@ -73,7 +71,6 @@ prepare() {
   patch -Np1 -i "${srcdir}/0024-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch"
 
   # misc. patches
-  patch -Np1 -i "${srcdir}/set-trampoline-flags-regardless.patch"
   patch -Np1 -i "${srcdir}/overclock.patch"
   patch -Np1 -i "${srcdir}/pbp-power-button-as-delete.patch"
 
