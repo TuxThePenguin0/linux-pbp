@@ -3240,7 +3240,7 @@ index 556d424c6f52..cfad4c296ca1 100644
  ccflags-y := -fno-common -fno-builtin -fno-stack-protector -ffixed-x18
  ccflags-y += -DDISABLE_BRANCH_PROFILING
  
--CFLAGS_REMOVE_vgettimeofday.o = $(CC_FLAGS_FTRACE) -Os $(CC_FLAGS_SCS)
+-CFLAGS_REMOVE_vgettimeofday.o = $(CC_FLAGS_FTRACE) -Os $(CC_FLAGS_SCS) $(GCC_PLUGINS_CFLAGS)
 -KBUILD_CFLAGS			+= $(DISABLE_LTO)
 +CFLAGS_REMOVE_vgettimeofday.o = $(CC_FLAGS_FTRACE) -Os $(CC_FLAGS_SCS) \
 +				$(CC_FLAGS_LTO)
