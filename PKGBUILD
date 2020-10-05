@@ -50,7 +50,7 @@ md5sums=('0e5c4c15266218ef26c50fac0016095b'
          '81d70a76169189a6f029ef717cedcf4d'
          '3fd917748d2d2843120fa6f2d56c5c5f'
          '3bf7a09ccd7ea40fb39d20744cd30d7d'
-         '92b339c41e0c23d9e01e19d55b47758f'
+         '330a36533ceca190c3952dd6ec0749ca'
          '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
          '3dc88030a8f2f5a5f97266d99b149f77')
@@ -90,7 +90,7 @@ build() {
   cd ${_srcname}
 
   # get kernel version
-  make prepare
+  make CC=clang LLVM=1 prepare
 
   # load configuration
   # Configure the kernel. Replace the line below with one of your choice.
