@@ -14,7 +14,7 @@ pkgrel=1
 arch=('aarch64')
 url="http://www.kernel.org/"
 license=('GPL2')
-makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'dtc')
+makedepends=('clang>=11.0.0' 'llvm>=11.0.0' 'lld>=11.0.0' 'xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'dtc')
 options=('!strip')
 source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         "http://www.kernel.org/pub/linux/kernel/v5.x/patch-${pkgver}.xz"
@@ -30,6 +30,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0024-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch'
         'overclock.patch'
         'pbp-power-button-as-delete.patch'
+        'add-support-for-Clang-LTO.patch'
         'config'
         'linux.preset'
         '60-linux.hook'
@@ -48,7 +49,8 @@ md5sums=('0e5c4c15266218ef26c50fac0016095b'
          '73803b563b9e794a3b495524de99ced7'
          '81d70a76169189a6f029ef717cedcf4d'
          '3fd917748d2d2843120fa6f2d56c5c5f'
-         '607f5045801508b5a47952959e75dc32'
+         '3bf7a09ccd7ea40fb39d20744cd30d7d'
+         '330a36533ceca190c3952dd6ec0749ca'
          '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
          '3dc88030a8f2f5a5f97266d99b149f77')
@@ -73,6 +75,7 @@ prepare() {
   # misc. patches
   patch -Np1 -i "${srcdir}/overclock.patch"
   patch -Np1 -i "${srcdir}/pbp-power-button-as-delete.patch"
+  patch -Np1 -i "${srcdir}/add-support-for-Clang-LTO.patch"
 
   cat "${srcdir}/config" > ./.config
 
@@ -87,7 +90,7 @@ build() {
   cd ${_srcname}
 
   # get kernel version
-  make prepare
+  make CC=clang LLVM=1 prepare
 
   # load configuration
   # Configure the kernel. Replace the line below with one of your choice.
@@ -111,9 +114,9 @@ build() {
 
   # build!
   unset LDFLAGS
-  make ${MAKEFLAGS} Image Image.gz modules
+  make CC=clang LLVM=1 ${MAKEFLAGS} Image Image.gz modules
   # Generate device tree blobs with symbols to support applying device tree overlays in U-Boot
-  make ${MAKEFLAGS} DTC_FLAGS="-@" dtbs
+  make CC=clang LLVM=1 ${MAKEFLAGS} DTC_FLAGS="-@" dtbs
 }
 
 _package() {
