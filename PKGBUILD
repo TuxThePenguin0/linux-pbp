@@ -50,7 +50,7 @@ md5sums=('0e5c4c15266218ef26c50fac0016095b'
          '81d70a76169189a6f029ef717cedcf4d'
          '3fd917748d2d2843120fa6f2d56c5c5f'
          '3bf7a09ccd7ea40fb39d20744cd30d7d'
-         '607f5045801508b5a47952959e75dc32'
+         '92b339c41e0c23d9e01e19d55b47758f'
          '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
          '3dc88030a8f2f5a5f97266d99b149f77')
@@ -114,9 +114,9 @@ build() {
 
   # build!
   unset LDFLAGS
-  make ${MAKEFLAGS} Image Image.gz modules
+  make CC=clang LLVM=1 ${MAKEFLAGS} Image Image.gz modules
   # Generate device tree blobs with symbols to support applying device tree overlays in U-Boot
-  make ${MAKEFLAGS} DTC_FLAGS="-@" dtbs
+  make CC=clang LLVM=1 ${MAKEFLAGS} DTC_FLAGS="-@" dtbs
 }
 
 _package() {
