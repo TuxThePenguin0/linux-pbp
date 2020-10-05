@@ -9,7 +9,7 @@ conflicts=("${_pkgname}")
 _srcname=linux-5.8
 _kernelname=${pkgbase#linux}
 _desc="Customised Linux kernel with patches for the Pinebook Pro."
-pkgver=5.8.12
+pkgver=5.8.13
 pkgrel=1
 arch=('aarch64')
 url="http://www.kernel.org/"
@@ -35,7 +35,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '60-linux.hook'
         '90-linux.hook')
 md5sums=('0e5c4c15266218ef26c50fac0016095b'
-         '28be6e68f00a28c13ef70745a5424ed9'
+         '1f276bf9d1bc12215179a4681c29a573'
          '11e653f50135c1e9fa703118fa7f2623'
          '05c7919f7fc1019e99e6965559bde5d5'
          '894a88a9579b22c22747b1748f181bb9'
