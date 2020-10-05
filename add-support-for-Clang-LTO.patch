@@ -1,0 +1,3816 @@
+From patchwork Wed Jun 24 20:31:39 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263574
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8781FC433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:35:08 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 681AB2080C
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:35:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="Xm0pw21C"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2391465AbgFXUc6 (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:32:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50446 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2391451AbgFXUcx (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:32:53 -0400
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A754FC061796
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:32:53 -0700 (PDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id c3so3488653ybi.3
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:32:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=xQdUf2OUslJj5DjDkMf3WWk6yA/Z9kKXMPQTw/J6IlI=;
+        b=Xm0pw21CFWwXKUCWT9uv8sjRFTZSZ2FxFwksg6PZZFhaViOtrXe11fAV4rmUtsA/iD
+         yw79dp1HbVFKYB9IyYfau+MusfZUyo7hsiV4z3U+B+VERxLsAmDLIOjA6ZbmwYQrk90b
+         ude2AkBLX9/aWcsdUn0At059rWaNafFELeyyTNpWfaIPQWe975NuzYbO2Y2+sB6z99TZ
+         DkeatZZ3I3Kg3WrJcfsykfzzNiGAFFIiaZ9KHBKGVzxxZKDwbNS3dVYdRS4I3s6IiWF7
+         F9FQwIOY90ZeHvihhQegbpcF6vQYY7VW45ZJstmN7BQcaqrs2XDnMXsRYKvPnePBoQiK
+         Uk5Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=xQdUf2OUslJj5DjDkMf3WWk6yA/Z9kKXMPQTw/J6IlI=;
+        b=LSnK56oywgWg1t1z9cTJs1Zr6Ls2ya51bBGsi7zMLvlrNDCruirabo+jmQppOwO0w/
+         ccPJhkMstGx2XICd1mWA8pzwMxVbXgsgyw/EsyQSe0DaVWqhw8GgBjIjfkHJBa8TsXEl
+         VNYeMnjU7sN+WC+GC4A5QKL5yI/vMoMJY6/WkaZHdmrz/amnU8d/0o+yebJHM559rXEw
+         cazvQNkz1K4ErjENl2c4wVyPT029O4ZQVo1he+/TNQlLyuSf5uysYf/dIHCTKMoyrfu0
+         Ei5/9JP8Om/KPq9v6NiqrXDSLOB2ftLM/HqBGcXdGHtrHKdPf0HdE2cHw9Fkv9LC5vlh
+         yQpw==
+X-Gm-Message-State: AOAM530sb8aVLTyzM910UU2KwP85aqIZYpC3ld68u2dEHI2FZl5XIrNU
+        /JnehC2B0ctwGaIYsdVb1+7tEMkZv8yARPB+RIM=
+X-Google-Smtp-Source: 
+ ABdhPJyaNd4T7jCJ2XxtqDk7As6bELzRlErz6uaK57hfCOoUmajW51Nj+2rWe6ZzApbtPE/D/8XgpW5QlQwx29+bABU=
+X-Received: by 2002:a25:4cca:: with SMTP id
+ z193mr43175648yba.510.1593030771779;
+ Wed, 24 Jun 2020 13:32:51 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:39 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-2-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 01/22] objtool: use sh_info to find the base for .rela
+ sections
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>,
+        Josh Poimboeuf <jpoimboe@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+ELF doesn't require .rela section names to match the base section. Use
+the section index in sh_info to find the section instead of looking it
+up by name.
+
+LLD, for example, generates a .rela section that doesn't match the base
+section name when we merge sections in a linker script for a binary
+compiled with -ffunction-sections.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+Reviewed-by: Kees Cook <keescook@chromium.org>
+---
+ tools/objtool/elf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/objtool/elf.c b/tools/objtool/elf.c
+index 84225679f96d..c1ba92abaa03 100644
+--- a/tools/objtool/elf.c
++++ b/tools/objtool/elf.c
+@@ -502,7 +502,7 @@ static int read_relas(struct elf *elf)
+ 		if (sec->sh.sh_type != SHT_RELA)
+ 			continue;
+ 
+-		sec->base = find_section_by_name(elf, sec->name + 5);
++		sec->base = find_section_by_index(elf, sec->sh.sh_info);
+ 		if (!sec->base) {
+ 			WARN("can't find base section for rela section %s",
+ 			     sec->name);
+
+From patchwork Wed Jun 24 20:31:40 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263552
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD021C433E1
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:02 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 746BA20836
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="COoeXSQl"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406361AbgFXUdB (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50456 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2391461AbgFXUc5 (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:32:57 -0400
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87C65C061573
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:32:56 -0700 (PDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id 186so3454037yby.19
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:32:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=/wrr17V+FsCXcFbmRN2vHICWLIelteQsueKzbrVs9hw=;
+        b=COoeXSQlCw4QRSMoNZarFzFNTbDcr6maZAyBTdDeJ3xsLc6rncF7v9wWsAunQPtuzH
+         7vNEgFVFpuwR2ETEwflij42oCPn4XuNbO8xP+xeO/JpQ4cbNn2mzatO27UjmEPI7Tlmm
+         5TKoTnAzd8KGxzyXY/s7E79IbefQXu1e7hrmLjW2x43kK7mH1XyN8wifsRReBhhprunp
+         uhXKFTHc+VpBQyltyThaPTu+CQS4/Nc+Iffym5jl0Vq7YLusiAqpFo333GBF/6UHQ6HU
+         tKuOaCWx4957S+p/qAE9zWc4CIXFC4tU55bAISk7rrINEcRJNCeupH5Gi/K/bZ9GZlKw
+         OtfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=/wrr17V+FsCXcFbmRN2vHICWLIelteQsueKzbrVs9hw=;
+        b=OGW4NcE4XJHaL4H5TDxtIazrqwf76JpLF2yBp32q3iKSDqnvUjPpmULmBEsyOH7KvO
+         VoebgjWibSeuQKj2KeJ4i59uzNX3EBjVWHN3BdmovgBdlOKjPwltEtKqtXI62oaZ5mRo
+         KIkjE/Ganaz5SPcybooBvwOJ392ruf/LQ+6yMKqZp4jxI4IWN9OmYM2T7h1fessZ7M+/
+         B/h/ii/nIRDx4GKja+obuKnpS4GcIOpHhpiWwzPubqJS8bkbQM9RA2kTpYYFDC28/dba
+         HuOuNPgv0ZPqiOtH8L3kaGuA6GJ6cZ8/nSYZ3kUHkd2u++xxQBb4vbvRCP5czKkw/5Rc
+         Hd+w==
+X-Gm-Message-State: AOAM533WR4JTHc/JD9dvsRPLN73k61O3QHSb6B4H4eosr1TgYWoS1j+c
+        w4+AOWJDwFv9tIq2ciud+wOz77HuVdVX3B40UxM=
+X-Google-Smtp-Source: 
+ ABdhPJzNUx+zDn4WfpUBRej52AydQCDedaVXaTDX3VpJk3mmTtqNJ/BdB8+Tfc74cfqhKkMv2ddRCbECop7L3VUHAek=
+X-Received: by 2002:a5b:307:: with SMTP id j7mr44548339ybp.292.1593030775736;
+ Wed, 24 Jun 2020 13:32:55 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:40 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-3-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 02/22] kbuild: add support for Clang LTO
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+This change adds build system support for Clang's Link Time
+Optimization (LTO). With -flto, instead of ELF object files, Clang
+produces LLVM bitcode, which is compiled into native code at link
+time, allowing the final binary to be optimized globally. For more
+details, see:
+
+  https://llvm.org/docs/LinkTimeOptimization.html
+
+The Kconfig option CONFIG_LTO_CLANG is implemented as a choice,
+which defaults to LTO being disabled. To use LTO, the architecture
+must select ARCH_SUPPORTS_LTO_CLANG and support:
+
+  - compiling with Clang,
+  - compiling inline assembly with Clang's integrated assembler,
+  - and linking with LLD.
+
+While using full LTO results in the best runtime performance, the
+compilation is not scalable in time or memory. CONFIG_THINLTO
+enables ThinLTO, which allows parallel optimization and faster
+incremental builds. ThinLTO is used by default if the architecture
+also selects ARCH_SUPPORTS_THINLTO:
+
+  https://clang.llvm.org/docs/ThinLTO.html
+
+To enable LTO, LLVM tools must be used to handle bitcode files. The
+easiest way is to pass the LLVM=1 option to make:
+
+  $ make LLVM=1 defconfig
+  $ scripts/config -e LTO_CLANG
+  $ make LLVM=1
+
+Alternatively, at least the following LLVM tools must be used:
+
+  CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm
+
+To prepare for LTO support with other compilers, common parts are
+gated behind the CONFIG_LTO option, and LTO can be disabled for
+specific files by filtering out CC_FLAGS_LTO.
+
+Note that support for DYNAMIC_FTRACE and MODVERSIONS are added in
+follow-up patches.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ Makefile                          | 16 ++++++++
+ arch/Kconfig                      | 66 +++++++++++++++++++++++++++++++
+ include/asm-generic/vmlinux.lds.h | 11 ++++--
+ scripts/Makefile.build            |  9 ++++-
+ scripts/Makefile.modfinal         |  9 ++++-
+ scripts/Makefile.modpost          | 24 ++++++++++-
+ scripts/link-vmlinux.sh           | 32 +++++++++++----
+ 7 files changed, 151 insertions(+), 16 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index ac2c61c37a73..0c7fe6fb2143 100644
+--- a/Makefile
++++ b/Makefile
+@@ -886,6 +886,22 @@ KBUILD_CFLAGS	+= $(CC_FLAGS_SCS)
+ export CC_FLAGS_SCS
+ endif
+ 
++ifdef CONFIG_LTO_CLANG
++ifdef CONFIG_THINLTO
++CC_FLAGS_LTO_CLANG := -flto=thin $(call cc-option, -fsplit-lto-unit)
++KBUILD_LDFLAGS	+= --thinlto-cache-dir=.thinlto-cache
++else
++CC_FLAGS_LTO_CLANG := -flto
++endif
++CC_FLAGS_LTO_CLANG += -fvisibility=default
++endif
++
++ifdef CONFIG_LTO
++CC_FLAGS_LTO	:= $(CC_FLAGS_LTO_CLANG)
++KBUILD_CFLAGS	+= $(CC_FLAGS_LTO)
++export CC_FLAGS_LTO
++endif
++
+ # arch Makefile may override CC so keep this after arch Makefile is included
+ NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+ 
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 8cc35dc556c7..e00b122293f8 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -552,6 +552,72 @@ config SHADOW_CALL_STACK
+ 	  reading and writing arbitrary memory may be able to locate them
+ 	  and hijack control flow by modifying the stacks.
+ 
++config LTO
++	bool
++
++config ARCH_SUPPORTS_LTO_CLANG
++	bool
++	help
++	  An architecture should select this option if it supports:
++	  - compiling with Clang,
++	  - compiling inline assembly with Clang's integrated assembler,
++	  - and linking with LLD.
++
++config ARCH_SUPPORTS_THINLTO
++	bool
++	help
++	  An architecture should select this option if it supports Clang's
++	  ThinLTO.
++
++config THINLTO
++	bool "Clang ThinLTO"
++	depends on LTO_CLANG && ARCH_SUPPORTS_THINLTO
++	default y
++	help
++	  This option enables Clang's ThinLTO, which allows for parallel
++	  optimization and faster incremental compiles. More information
++	  can be found from Clang's documentation:
++
++	    https://clang.llvm.org/docs/ThinLTO.html
++
++choice
++	prompt "Link Time Optimization (LTO)"
++	default LTO_NONE
++	help
++	  This option enables Link Time Optimization (LTO), which allows the
++	  compiler to optimize binaries globally.
++
++	  If unsure, select LTO_NONE.
++
++config LTO_NONE
++	bool "None"
++
++config LTO_CLANG
++	bool "Clang's Link Time Optimization (EXPERIMENTAL)"
++	depends on CC_IS_CLANG && CLANG_VERSION >= 110000 && LD_IS_LLD
++	depends on $(success,$(NM) --help | head -n 1 | grep -qi llvm)
++	depends on $(success,$(AR) --help | head -n 1 | grep -qi llvm)
++	depends on ARCH_SUPPORTS_LTO_CLANG
++	depends on !FTRACE_MCOUNT_RECORD
++	depends on !KASAN
++	depends on !MODVERSIONS
++	select LTO
++	help
++          This option enables Clang's Link Time Optimization (LTO), which
++          allows the compiler to optimize the kernel globally. If you enable
++          this option, the compiler generates LLVM bitcode instead of ELF
++          object files, and the actual compilation from bitcode happens at
++          the LTO link step, which may take several minutes depending on the
++          kernel configuration. More information can be found from LLVM's
++          documentation:
++
++	    https://llvm.org/docs/LinkTimeOptimization.html
++
++	  To select this option, you also need to use LLVM tools to handle
++	  the bitcode by passing LLVM=1 to make.
++
++endchoice
++
+ config HAVE_ARCH_WITHIN_STACK_FRAMES
+ 	bool
+ 	help
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index db600ef218d7..78079000c05a 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -89,15 +89,18 @@
+  * .data. We don't want to pull in .data..other sections, which Linux
+  * has defined. Same for text and bss.
+  *
++ * With LTO_CLANG, the linker also splits sections by default, so we need
++ * these macros to combine the sections during the final link.
++ *
+  * RODATA_MAIN is not used because existing code already defines .rodata.x
+  * sections to be brought in with rodata.
+  */
+-#ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
++#if defined(CONFIG_LD_DEAD_CODE_DATA_ELIMINATION) || defined(CONFIG_LTO_CLANG)
+ #define TEXT_MAIN .text .text.[0-9a-zA-Z_]*
+-#define DATA_MAIN .data .data.[0-9a-zA-Z_]* .data..LPBX*
++#define DATA_MAIN .data .data.[0-9a-zA-Z_]* .data..L* .data..compoundliteral*
+ #define SDATA_MAIN .sdata .sdata.[0-9a-zA-Z_]*
+-#define RODATA_MAIN .rodata .rodata.[0-9a-zA-Z_]*
+-#define BSS_MAIN .bss .bss.[0-9a-zA-Z_]*
++#define RODATA_MAIN .rodata .rodata.[0-9a-zA-Z_]* .rodata..L*
++#define BSS_MAIN .bss .bss.[0-9a-zA-Z_]* .bss..compoundliteral*
+ #define SBSS_MAIN .sbss .sbss.[0-9a-zA-Z_]*
+ #else
+ #define TEXT_MAIN .text
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 2e8810b7e5ed..f307e708a1b7 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -108,7 +108,7 @@ endif
+ # ---------------------------------------------------------------------------
+ 
+ quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
+-      cmd_cc_s_c = $(CC) $(filter-out $(DEBUG_CFLAGS), $(c_flags)) $(DISABLE_LTO) -fverbose-asm -S -o $@ $<
++      cmd_cc_s_c = $(CC) $(filter-out $(DEBUG_CFLAGS) $(CC_FLAGS_LTO), $(c_flags)) -fverbose-asm -S -o $@ $<
+ 
+ $(obj)/%.s: $(src)/%.c FORCE
+ 	$(call if_changed_dep,cc_s_c)
+@@ -424,8 +424,15 @@ $(obj)/lib.a: $(lib-y) FORCE
+ # Do not replace $(filter %.o,^) with $(real-prereqs). When a single object
+ # module is turned into a multi object module, $^ will contain header file
+ # dependencies recorded in the .*.cmd file.
++ifdef CONFIG_LTO_CLANG
++quiet_cmd_link_multi-m = AR [M]  $@
++cmd_link_multi-m =						\
++	rm -f $@; 						\
++	$(AR) rcsTP$(KBUILD_ARFLAGS) $@ $(filter %.o,$^)
++else
+ quiet_cmd_link_multi-m = LD [M]  $@
+       cmd_link_multi-m = $(LD) $(ld_flags) -r -o $@ $(filter %.o,$^)
++endif
+ 
+ $(multi-used-m): FORCE
+ 	$(call if_changed,link_multi-m)
+diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
+index 411c1e600e7d..1005b147abd0 100644
+--- a/scripts/Makefile.modfinal
++++ b/scripts/Makefile.modfinal
+@@ -6,6 +6,7 @@
+ PHONY := __modfinal
+ __modfinal:
+ 
++include $(objtree)/include/config/auto.conf
+ include $(srctree)/scripts/Kbuild.include
+ 
+ # for c_flags
+@@ -29,6 +30,12 @@ quiet_cmd_cc_o_c = CC [M]  $@
+ 
+ ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(SRCARCH)/Makefile.postlink)
+ 
++ifdef CONFIG_LTO_CLANG
++# With CONFIG_LTO_CLANG, reuse the object file we compiled for modpost to
++# avoid a second slow LTO link
++prelink-ext := .lto
++endif
++
+ quiet_cmd_ld_ko_o = LD [M]  $@
+       cmd_ld_ko_o =                                                     \
+ 	$(LD) -r $(KBUILD_LDFLAGS)					\
+@@ -37,7 +44,7 @@ quiet_cmd_ld_ko_o = LD [M]  $@
+ 		-o $@ $(filter %.o, $^);				\
+ 	$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
+ 
+-$(modules): %.ko: %.o %.mod.o $(KBUILD_LDS_MODULE) FORCE
++$(modules): %.ko: %$(prelink-ext).o %.mod.o $(KBUILD_LDS_MODULE) FORCE
+ 	+$(call if_changed,ld_ko_o)
+ 
+ targets += $(modules) $(modules:.ko=.mod.o)
+diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
+index 3651cbf6ad49..9ced8aecd579 100644
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -102,12 +102,32 @@ $(input-symdump):
+ 	@echo >&2 'WARNING: Symbol version dump "$@" is missing.'
+ 	@echo >&2 '         Modules may not have dependencies or modversions.'
+ 
++ifdef CONFIG_LTO_CLANG
++# With CONFIG_LTO_CLANG, .o files might be LLVM bitcode, so we need to run
++# LTO to compile them into native code before running modpost
++prelink-ext = .lto
++
++quiet_cmd_cc_lto_link_modules = LTO [M] $@
++cmd_cc_lto_link_modules =						\
++	$(LD) $(ld_flags) -r -o $@					\
++		--whole-archive $(filter-out FORCE,$^)
++
++%.lto.o: %.o FORCE
++	$(call if_changed,cc_lto_link_modules)
++
++PHONY += FORCE
++FORCE:
++
++endif
++
++modules := $(sort $(shell cat $(MODORDER)))
++
+ # Read out modules.order to pass in modpost.
+ # Otherwise, allmodconfig would fail with "Argument list too long".
+ quiet_cmd_modpost = MODPOST $@
+-      cmd_modpost = sed 's/ko$$/o/' $< | $(MODPOST) -T -
++      cmd_modpost = sed 's/\.ko$$/$(prelink-ext)\.o/' $< | $(MODPOST) -T -
+ 
+-$(output-symdump): $(MODORDER) $(input-symdump) FORCE
++$(output-symdump): $(MODORDER) $(input-symdump) $(modules:.ko=$(prelink-ext).o) FORCE
+ 	$(call if_changed,modpost)
+ 
+ targets += $(output-symdump)
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+index 92dd745906f4..a681b3b6722e 100755
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -52,6 +52,14 @@ modpost_link()
+ 		${KBUILD_VMLINUX_LIBS}				\
+ 		--end-group"
+ 
++	if [ -n "${CONFIG_LTO_CLANG}" ]; then
++		# This might take a while, so indicate that we're doing
++		# an LTO link
++		info LTO ${1}
++	else
++		info LD ${1}
++	fi
++
+ 	${LD} ${KBUILD_LDFLAGS} -r -o ${1} ${objects}
+ }
+ 
+@@ -99,13 +107,22 @@ vmlinux_link()
+ 	fi
+ 
+ 	if [ "${SRCARCH}" != "um" ]; then
+-		objects="--whole-archive			\
+-			${KBUILD_VMLINUX_OBJS}			\
+-			--no-whole-archive			\
+-			--start-group				\
+-			${KBUILD_VMLINUX_LIBS}			\
+-			--end-group				\
+-			${@}"
++		if [ -n "${CONFIG_LTO_CLANG}" ]; then
++			# Use vmlinux.o instead of performing the slow LTO
++			# link again.
++			objects="--whole-archive		\
++				vmlinux.o 			\
++				--no-whole-archive		\
++				${@}"
++		else
++			objects="--whole-archive		\
++				${KBUILD_VMLINUX_OBJS}		\
++				--no-whole-archive		\
++				--start-group			\
++				${KBUILD_VMLINUX_LIBS}		\
++				--end-group			\
++				${@}"
++		fi
+ 
+ 		${LD} ${KBUILD_LDFLAGS} ${LDFLAGS_vmlinux}	\
+ 			${strip_debug#-Wl,}			\
+@@ -270,7 +287,6 @@ fi;
+ ${MAKE} -f "${srctree}/scripts/Makefile.build" obj=init need-builtin=1
+ 
+ #link vmlinux.o
+-info LD vmlinux.o
+ modpost_link vmlinux.o
+ objtool_link vmlinux.o
+ 
+
+From patchwork Wed Jun 24 20:31:41 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263553
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 678CBC433E0
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:07 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 3E7832084D
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="vIahDq7a"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406440AbgFXUdF (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50480 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406344AbgFXUdB (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:01 -0400
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A123EC061796
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:00 -0700 (PDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id f16so3544307ybp.5
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=zJgCLl2NhOgZBqIPJZhtZ4TPiUfcQmmxIv/fzhpa6kU=;
+        b=vIahDq7aqL96yiIpIepm/3ftBU8lrk2hUmV84VfhySVdQjCUeRR+npewyO02VLNg1H
+         EKz3O7JTeZ12pduy22CiakNubOk5eUICY6CzRnZZ+sqjK5BZ+Ey/hYmxL252W/v3Vw3R
+         QHQ+BsLn7Dhzl+5iipLN1+5H5sMa2z5svyVXJRQKvxVQctYxW6ebqQJ3ULghYqVLE/mE
+         +epm6jN27/TjGyvgv03OaZPqY9SJiFtufPYwDQq2nbQ/suFkEhepQpQYZtjqOKH1NZDA
+         RhrCSfZCiizO3jsUHNb/S1nkjOMbYcBzY5F4xXLc6roRSQybnwlsVEFxN2n39HcU9fzE
+         6+rw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=zJgCLl2NhOgZBqIPJZhtZ4TPiUfcQmmxIv/fzhpa6kU=;
+        b=ax2SoC9amjC8VgjSo0wLPadvfYM/ZzcKe/joSdaWF21LgTWLh2zHRO+joHMJXMZFc5
+         RTGQ8UAgEpyHEIkwLD8yfJlnyxY8Nnico6XkRu7m+s2t0wmVmJpZgHWe99KHNaban383
+         U/zA262eVH7nSTz2yuYb+P2OYjq5+78srQ9Oux5IF48pqCpwLqVeZCPwyhoBioRcC1HM
+         A8o4ZX7hlZ/YSPk6+08R6Q7Dc/c/HtpvtQzd83zhgSf/IxfwCIiAtO0IWbEDxqVPOd7b
+         VsGVc/rZke5P5KSEoLIG0ZlBZoQhvkf7vtXWeE/TrN7mraG8lO4yOYoHPcv7XS1+MVA4
+         Ffug==
+X-Gm-Message-State: AOAM531xWhdZ6w6nX6D4BJdvdvhpURzRlqtShSygmhLS3z7ogiIu1/1s
+        ozSw6tTvFTxYzNFSTr/KaQgU4W3eUxp1AxBa07o=
+X-Google-Smtp-Source: 
+ ABdhPJwtupmBRpPe049uS/8X19V10xLMzevhQMzdrNMrqBVJvPzK6fkgs/2PZX+Qd9dpa9Rprg1LfaTpoC6sBdC1f/k=
+X-Received: by 2002:a25:7386:: with SMTP id
+ o128mr46698757ybc.266.1593030779834;
+ Wed, 24 Jun 2020 13:32:59 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:41 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-4-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 03/22] kbuild: lto: fix module versioning
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With CONFIG_MODVERSIONS, version information is linked into each
+compilation unit that exports symbols. With LTO, we cannot use this
+method as all C code is compiled into LLVM bitcode instead. This
+change collects symbol versions into .symversions files and merges
+them in link-vmlinux.sh where they are all linked into vmlinux.o at
+the same time.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ .gitignore               |  1 +
+ Makefile                 |  3 ++-
+ arch/Kconfig             |  1 -
+ scripts/Makefile.build   | 33 +++++++++++++++++++++++++++++++--
+ scripts/Makefile.modpost |  2 ++
+ scripts/link-vmlinux.sh  | 25 ++++++++++++++++++++++++-
+ 6 files changed, 60 insertions(+), 5 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index 87b9dd8a163b..51b02c2f2826 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -41,6 +41,7 @@
+ *.so.dbg
+ *.su
+ *.symtypes
++*.symversions
+ *.tab.[ch]
+ *.tar
+ *.xz
+diff --git a/Makefile b/Makefile
+index 0c7fe6fb2143..161ad0d1f77f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1793,7 +1793,8 @@ clean: $(clean-dirs)
+ 		-o -name '.tmp_*.o.*' \
+ 		-o -name '*.c.[012]*.*' \
+ 		-o -name '*.ll' \
+-		-o -name '*.gcno' \) -type f -print | xargs rm -f
++		-o -name '*.gcno' \
++		-o -name '*.*.symversions' \) -type f -print | xargs rm -f
+ 
+ # Generate tags for editors
+ # ---------------------------------------------------------------------------
+diff --git a/arch/Kconfig b/arch/Kconfig
+index e00b122293f8..87488fe1e6b8 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -600,7 +600,6 @@ config LTO_CLANG
+ 	depends on ARCH_SUPPORTS_LTO_CLANG
+ 	depends on !FTRACE_MCOUNT_RECORD
+ 	depends on !KASAN
+-	depends on !MODVERSIONS
+ 	select LTO
+ 	help
+           This option enables Clang's Link Time Optimization (LTO), which
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index f307e708a1b7..5c0bbb6ddfcf 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -163,6 +163,15 @@ ifdef CONFIG_MODVERSIONS
+ #   the actual value of the checksum generated by genksyms
+ # o remove .tmp_<file>.o to <file>.o
+ 
++ifdef CONFIG_LTO_CLANG
++# Generate .o.symversions files for each .o with exported symbols, and link these
++# to the kernel and/or modules at the end.
++cmd_modversions_c =								\
++	if $(NM) $@ 2>/dev/null | grep -q __ksymtab; then			\
++		$(call cmd_gensymtypes_c,$(KBUILD_SYMTYPES),$(@:.o=.symtypes))	\
++		    > $@.symversions;						\
++	fi;
++else
+ cmd_modversions_c =								\
+ 	if $(OBJDUMP) -h $@ | grep -q __ksymtab; then				\
+ 		$(call cmd_gensymtypes_c,$(KBUILD_SYMTYPES),$(@:.o=.symtypes))	\
+@@ -174,6 +183,7 @@ cmd_modversions_c =								\
+ 		rm -f $(@D)/.tmp_$(@F:.o=.ver);					\
+ 	fi
+ endif
++endif
+ 
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ ifndef CC_USING_RECORD_MCOUNT
+@@ -389,6 +399,18 @@ $(obj)/%.asn1.c $(obj)/%.asn1.h: $(src)/%.asn1 $(objtree)/scripts/asn1_compiler
+ $(subdir-builtin): $(obj)/%/built-in.a: $(obj)/% ;
+ $(subdir-modorder): $(obj)/%/modules.order: $(obj)/% ;
+ 
++# combine symversions for later processing
++quiet_cmd_update_lto_symversions = SYMVER  $@
++ifeq ($(CONFIG_LTO_CLANG) $(CONFIG_MODVERSIONS),y y)
++      cmd_update_lto_symversions =					\
++	rm -f $@.symversions						\
++	$(foreach n, $(filter-out FORCE,$^),				\
++		$(if $(wildcard $(n).symversions),			\
++			; cat $(n).symversions >> $@.symversions))
++else
++      cmd_update_lto_symversions = echo >/dev/null
++endif
++
+ #
+ # Rule to compile a set of .o files into one .a file (without symbol table)
+ #
+@@ -396,8 +418,11 @@ $(subdir-modorder): $(obj)/%/modules.order: $(obj)/% ;
+ quiet_cmd_ar_builtin = AR      $@
+       cmd_ar_builtin = rm -f $@; $(AR) cDPrST $@ $(real-prereqs)
+ 
++quiet_cmd_ar_and_symver = AR      $@
++      cmd_ar_and_symver = $(cmd_update_lto_symversions); $(cmd_ar_builtin)
++
+ $(obj)/built-in.a: $(real-obj-y) FORCE
+-	$(call if_changed,ar_builtin)
++	$(call if_changed,ar_and_symver)
+ 
+ #
+ # Rule to create modules.order file
+@@ -417,8 +442,11 @@ $(obj)/modules.order: $(obj-m) FORCE
+ #
+ # Rule to compile a set of .o files into one .a file (with symbol table)
+ #
++quiet_cmd_ar_lib = AR      $@
++      cmd_ar_lib = $(cmd_update_lto_symversions); $(cmd_ar)
++
+ $(obj)/lib.a: $(lib-y) FORCE
+-	$(call if_changed,ar)
++	$(call if_changed,ar_lib)
+ 
+ # NOTE:
+ # Do not replace $(filter %.o,^) with $(real-prereqs). When a single object
+@@ -427,6 +455,7 @@ $(obj)/lib.a: $(lib-y) FORCE
+ ifdef CONFIG_LTO_CLANG
+ quiet_cmd_link_multi-m = AR [M]  $@
+ cmd_link_multi-m =						\
++	$(cmd_update_lto_symversions);				\
+ 	rm -f $@; 						\
+ 	$(AR) rcsTP$(KBUILD_ARFLAGS) $@ $(filter %.o,$^)
+ else
+diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
+index 9ced8aecd579..42dbdc2bbf73 100644
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -110,6 +110,8 @@ prelink-ext = .lto
+ quiet_cmd_cc_lto_link_modules = LTO [M] $@
+ cmd_cc_lto_link_modules =						\
+ 	$(LD) $(ld_flags) -r -o $@					\
++		$(shell [ -s $(@:.lto.o=.o.symversions) ] &&		\
++			echo -T $(@:.lto.o=.o.symversions))		\
+ 		--whole-archive $(filter-out FORCE,$^)
+ 
+ %.lto.o: %.o FORCE
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+index a681b3b6722e..69a6d7254e28 100755
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -39,11 +39,28 @@ info()
+ 	fi
+ }
+ 
++# If CONFIG_LTO_CLANG is selected, collect generated symbol versions into
++# .tmp_symversions.lds
++gen_symversions()
++{
++	info GEN .tmp_symversions.lds
++	rm -f .tmp_symversions.lds
++
++	for a in ${KBUILD_VMLINUX_OBJS} ${KBUILD_VMLINUX_LIBS}; do
++		for o in $(${AR} t $a 2>/dev/null); do
++			if [ -f ${o}.symversions ]; then
++				cat ${o}.symversions >> .tmp_symversions.lds
++			fi
++		done
++	done
++}
++
+ # Link of vmlinux.o used for section mismatch analysis
+ # ${1} output file
+ modpost_link()
+ {
+ 	local objects
++	local lds=""
+ 
+ 	objects="--whole-archive				\
+ 		${KBUILD_VMLINUX_OBJS}				\
+@@ -53,6 +70,11 @@ modpost_link()
+ 		--end-group"
+ 
+ 	if [ -n "${CONFIG_LTO_CLANG}" ]; then
++		if [ -n "${CONFIG_MODVERSIONS}" ]; then
++			gen_symversions
++			lds="${lds} -T .tmp_symversions.lds"
++		fi
++
+ 		# This might take a while, so indicate that we're doing
+ 		# an LTO link
+ 		info LTO ${1}
+@@ -60,7 +82,7 @@ modpost_link()
+ 		info LD ${1}
+ 	fi
+ 
+-	${LD} ${KBUILD_LDFLAGS} -r -o ${1} ${objects}
++	${LD} ${KBUILD_LDFLAGS} -r -o ${1} ${lds} ${objects}
+ }
+ 
+ objtool_link()
+@@ -238,6 +260,7 @@ cleanup()
+ {
+ 	rm -f .btf.*
+ 	rm -f .tmp_System.map
++	rm -f .tmp_symversions.lds
+ 	rm -f .tmp_vmlinux*
+ 	rm -f System.map
+ 	rm -f vmlinux
+
+From patchwork Wed Jun 24 20:31:42 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263554
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D61AC433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:12 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 5D1CA2082F
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="o2nKUag0"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406467AbgFXUdK (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50494 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406429AbgFXUdE (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:04 -0400
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BA1CC061795
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:04 -0700 (PDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id o140so3475240yba.16
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=apr/xMGBKChEUgpglsm7SLvi5EseZ2l0OlujVaKR1Ng=;
+        b=o2nKUag0MXeHuoSKSFhp/2yxKJkh8hAOHialsc33tV/1JSfo0TJojZo+VuCF4S6ZRY
+         PJwi10LKoYCbiPOrkzHTUEfAUWmM7MV5pavS+ujf8z9kqFAkGJMn76qrC/ISP5TMbOuH
+         NWhJVmLgx8VSte4AMQa5oT2WtZHD/UJbi+0enN0abVOBDQKl9KFP4iSE8eOxixypsh+7
+         CZmNKXOqoKAd7nHxvuAyJLrPosBE5H6H65Vt11cAxLLnu6zssUE1KTIDPjDEDqosAFVV
+         6xMtAb9eD/uiFznILS60wEDxDxtXlynPVf8HZroMB/go75xgue2MDW3nqDwn8gsT4XNb
+         CQRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=apr/xMGBKChEUgpglsm7SLvi5EseZ2l0OlujVaKR1Ng=;
+        b=JWW2blF290i3A9WwbRQOJX6ShShqD/CYLyG4xupEVcTnjeEzia73hSOfYC8I+y5Sf1
+         6n6BkC1r5QtZJu1xlRc71tArFCTCaLCUJ9p1cq72P+/XGADsO4RE4hfkfCX3UaK/Oqlz
+         /4jgCuDkud02fR4ieIvIRV0laMXcobVfHwn3qFu2mSZS0ngPk1WSrTvlQraruoOik+2Z
+         wM8g5TnuzQeztlyPy3qzvFnGW5Olujpw39SFmIXGdg1K2ykow2rkEZN4spRgJ+IxxUJX
+         EeB75lLbSzLtPZTekH+QDPDbt1gjqrvYLXUoSUDP0MtKJokvi9um0uGXsruH7oCAeelE
+         GU3Q==
+X-Gm-Message-State: AOAM530I5jHgieVSm9esHi5oOt+ICtyZoDMpIU0r2dOhXZHMifWqyuea
+        MWoPPU0CyOqH2VDvpQrTLOkUKJt6lUGoitlLXnA=
+X-Google-Smtp-Source: 
+ ABdhPJwRZVZ6E3lpX9oZxZVYWkChT+cVfPRtENzCGkVOHvnXVJtjGTH1c7VF2FTPmKEfqFgTY7AiMicZV760XUsik/0=
+X-Received: by 2002:a25:df15:: with SMTP id
+ w21mr44302291ybg.210.1593030783493;
+ Wed, 24 Jun 2020 13:33:03 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:42 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-5-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 04/22] kbuild: lto: fix recordmcount
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With LTO, LLVM bitcode won't be compiled into native code until
+modpost_link. This change postpones calls to recordmcount until after
+this step.
+
+In order to exclude specific functions from inspection, we add a new
+code section .text..nomcount, which we tell recordmcount to ignore, and
+a __nomcount attribute for moving functions to this section.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ Makefile                          |  2 +-
+ arch/Kconfig                      |  2 +-
+ include/asm-generic/vmlinux.lds.h |  1 +
+ include/linux/compiler-clang.h    |  4 ++++
+ include/linux/compiler_types.h    |  4 ++++
+ kernel/trace/ftrace.c             |  1 +
+ scripts/Makefile.build            |  9 +++++++++
+ scripts/Makefile.modfinal         | 18 ++++++++++++++++--
+ scripts/link-vmlinux.sh           | 29 +++++++++++++++++++++++++++++
+ scripts/recordmcount.c            |  3 ++-
+ 10 files changed, 68 insertions(+), 5 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 161ad0d1f77f..3a7e5e5c17b9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -861,7 +861,7 @@ KBUILD_AFLAGS	+= $(CC_FLAGS_USING)
+ ifdef CONFIG_DYNAMIC_FTRACE
+ 	ifdef CONFIG_HAVE_C_RECORDMCOUNT
+ 		BUILD_C_RECORDMCOUNT := y
+-		export BUILD_C_RECORDMCOUNT
++		export BUILD_C_RECORDMCOUNT RECORDMCOUNT_WARN
+ 	endif
+ endif
+ endif
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 87488fe1e6b8..85b2044b927d 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -598,7 +598,7 @@ config LTO_CLANG
+ 	depends on $(success,$(NM) --help | head -n 1 | grep -qi llvm)
+ 	depends on $(success,$(AR) --help | head -n 1 | grep -qi llvm)
+ 	depends on ARCH_SUPPORTS_LTO_CLANG
+-	depends on !FTRACE_MCOUNT_RECORD
++	depends on !FTRACE_MCOUNT_RECORD || HAVE_C_RECORDMCOUNT
+ 	depends on !KASAN
+ 	select LTO
+ 	help
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 78079000c05a..a1c902b808d0 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -565,6 +565,7 @@
+ 		*(.text.hot TEXT_MAIN .text.fixup .text.unlikely)	\
+ 		NOINSTR_TEXT						\
+ 		*(.text..refcount)					\
++		*(.text..nomcount)					\
+ 		*(.ref.text)						\
+ 	MEM_KEEP(init.text*)						\
+ 	MEM_KEEP(exit.text*)						\
+diff --git a/include/linux/compiler-clang.h b/include/linux/compiler-clang.h
+index ee37256ec8bd..fd78475c0642 100644
+--- a/include/linux/compiler-clang.h
++++ b/include/linux/compiler-clang.h
+@@ -55,3 +55,7 @@
+ #if __has_feature(shadow_call_stack)
+ # define __noscs	__attribute__((__no_sanitize__("shadow-call-stack")))
+ #endif
++
++#if defined(CONFIG_LTO_CLANG) && defined(CONFIG_FTRACE_MCOUNT_RECORD)
++#define __nomcount	__attribute__((__section__(".text..nomcount")))
++#endif
+diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
+index e368384445b6..1470c9703a25 100644
+--- a/include/linux/compiler_types.h
++++ b/include/linux/compiler_types.h
+@@ -233,6 +233,10 @@ struct ftrace_likely_data {
+ # define __noscs
+ #endif
+ 
++#ifndef __nomcount
++# define __nomcount
++#endif
++
+ #ifndef asm_volatile_goto
+ #define asm_volatile_goto(x...) asm goto(x)
+ #endif
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 1903b80db6eb..8e3ddb8123d9 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -6062,6 +6062,7 @@ static int ftrace_cmp_ips(const void *a, const void *b)
+ 	return 0;
+ }
+ 
++__nomcount
+ static int ftrace_process_locs(struct module *mod,
+ 			       unsigned long *start,
+ 			       unsigned long *end)
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 5c0bbb6ddfcf..64e99f4baa5b 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -187,6 +187,9 @@ endif
+ 
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ ifndef CC_USING_RECORD_MCOUNT
++ifndef CC_USING_PATCHABLE_FUNCTION_ENTRY
++# With LTO, we postpone recordmcount until we compile a native binary
++ifndef CONFIG_LTO_CLANG
+ # compiler will not generate __mcount_loc use recordmcount or recordmcount.pl
+ ifdef BUILD_C_RECORDMCOUNT
+ ifeq ("$(origin RECORDMCOUNT_WARN)", "command line")
+@@ -200,6 +203,8 @@ sub_cmd_record_mcount =					\
+ 	if [ $(@) != "scripts/mod/empty.o" ]; then	\
+ 		$(objtree)/scripts/recordmcount $(RECORDMCOUNT_FLAGS) "$(@)";	\
+ 	fi;
++endif # CONFIG_LTO_CLANG
++
+ recordmcount_source := $(srctree)/scripts/recordmcount.c \
+ 		    $(srctree)/scripts/recordmcount.h
+ else
+@@ -209,11 +214,15 @@ sub_cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
+ 	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS)" \
+ 	"$(LD) $(KBUILD_LDFLAGS)" "$(NM)" "$(RM)" "$(MV)" \
+ 	"$(if $(part-of-module),1,0)" "$(@)";
++
+ recordmcount_source := $(srctree)/scripts/recordmcount.pl
+ endif # BUILD_C_RECORDMCOUNT
++ifndef CONFIG_LTO_CLANG
+ cmd_record_mcount = $(if $(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags)),	\
+ 	$(sub_cmd_record_mcount))
++endif # CONFIG_LTO_CLANG
+ endif # CC_USING_RECORD_MCOUNT
++endif # CC_USING_PATCHABLE_FUNCTION_ENTRY
+ endif # CONFIG_FTRACE_MCOUNT_RECORD
+ 
+ ifdef CONFIG_STACK_VALIDATION
+diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
+index 1005b147abd0..d168f0cfe67c 100644
+--- a/scripts/Makefile.modfinal
++++ b/scripts/Makefile.modfinal
+@@ -34,10 +34,24 @@ ifdef CONFIG_LTO_CLANG
+ # With CONFIG_LTO_CLANG, reuse the object file we compiled for modpost to
+ # avoid a second slow LTO link
+ prelink-ext := .lto
+-endif
++
++# ELF processing was skipped earlier because we didn't have native code,
++# so let's now process the prelinked binary before we link the module.
++
++ifdef CONFIG_FTRACE_MCOUNT_RECORD
++ifndef CC_USING_RECORD_MCOUNT
++ifndef CC_USING_PATCHABLE_FUNCTION_ENTRY
++cmd_ld_ko_o += $(objtree)/scripts/recordmcount $(RECORDMCOUNT_FLAGS)	\
++			$(@:.ko=$(prelink-ext).o);
++
++endif # CC_USING_PATCHABLE_FUNCTION_ENTRY
++endif # CC_USING_RECORD_MCOUNT
++endif # CONFIG_FTRACE_MCOUNT_RECORD
++
++endif # CONFIG_LTO_CLANG
+ 
+ quiet_cmd_ld_ko_o = LD [M]  $@
+-      cmd_ld_ko_o =                                                     \
++      cmd_ld_ko_o +=                                                    \
+ 	$(LD) -r $(KBUILD_LDFLAGS)					\
+ 		$(KBUILD_LDFLAGS_MODULE) $(LDFLAGS_MODULE)		\
+ 		$(addprefix -T , $(KBUILD_LDS_MODULE))			\
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+index 69a6d7254e28..c72f5d0238f1 100755
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -108,6 +108,29 @@ objtool_link()
+ 	fi
+ }
+ 
++# If CONFIG_LTO_CLANG is selected, we postpone running recordmcount until
++# we have compiled LLVM IR to an object file.
++recordmcount()
++{
++	if [ "${CONFIG_LTO_CLANG} ${CONFIG_FTRACE_MCOUNT_RECORD}" != "y y" ]; then
++		return
++	fi
++
++	if [ -n "${CC_USING_RECORD_MCOUNT}" ]; then
++		return
++	fi
++	if [ -n "${CC_USING_PATCHABLE_FUNCTION_ENTRY}" ]; then
++		return
++	fi
++
++	local flags=""
++
++	[ -n "${RECORDMCOUNT_WARN}" ] && flags="-w"
++
++	info MCOUNT $*
++	${objtree}/scripts/recordmcount ${flags} $*
++}
++
+ # Link of vmlinux
+ # ${1} - output file
+ # ${2}, ${3}, ... - optional extra .o files
+@@ -316,6 +339,12 @@ objtool_link vmlinux.o
+ # modpost vmlinux.o to check for section mismatches
+ ${MAKE} -f "${srctree}/scripts/Makefile.modpost" MODPOST_VMLINUX=1
+ 
++if [ -n "${CONFIG_LTO_CLANG}" ]; then
++	# If we postponed ELF processing steps due to LTO, process
++	# vmlinux.o instead.
++	recordmcount vmlinux.o
++fi
++
+ info MODINFO modules.builtin.modinfo
+ ${OBJCOPY} -j .modinfo -O binary vmlinux.o modules.builtin.modinfo
+ info GEN modules.builtin
+diff --git a/scripts/recordmcount.c b/scripts/recordmcount.c
+index 7225107a9aaf..9e9f10b4d649 100644
+--- a/scripts/recordmcount.c
++++ b/scripts/recordmcount.c
+@@ -404,7 +404,8 @@ static uint32_t (*w2)(uint16_t);
+ /* Names of the sections that could contain calls to mcount. */
+ static int is_mcounted_section_name(char const *const txtname)
+ {
+-	return strncmp(".text",          txtname, 5) == 0 ||
++	return (strncmp(".text",           txtname, 5) == 0 &&
++		 strcmp(".text..nomcount", txtname) != 0) ||
+ 		strcmp(".init.text",     txtname) == 0 ||
+ 		strcmp(".ref.text",      txtname) == 0 ||
+ 		strcmp(".sched.text",    txtname) == 0 ||
+
+From patchwork Wed Jun 24 20:31:43 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263573
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F499C433E0
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:35:05 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 1EAB020885
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:35:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="IfZnlNH6"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2391446AbgFXUfD (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:35:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50510 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406444AbgFXUdH (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:07 -0400
+Received: from mail-qv1-xf4a.google.com (mail-qv1-xf4a.google.com
+ [IPv6:2607:f8b0:4864:20::f4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8BCE3C0613ED
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:07 -0700 (PDT)
+Received: by mail-qv1-xf4a.google.com with SMTP id bk16so2493428qvb.11
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=E72RKePZ9QWe5v89HuDG9dmOi1TM58THK6MPfXGAxFQ=;
+        b=IfZnlNH6VN1h5kv70OdYXiwpqxbG8Fsr0lLuwZMxg60FtsN9/VTg/yfhaEKY69+/+Y
+         hyTqsTQRwHJPTGJCgx79BwJ5QVcEKyLgdthjRqbiH95tnfQghy4dm0yUNuDWrYAYeuQK
+         bXlz5RTuRnG7qvLP46Ux6LdFVV3vgejq+f8vMdwP7C0ECe86rxVnbt4+28XS5oy0e//W
+         3PvqoaOrjXwuF1y+TVGpByJgFdYpZGp3bhGDnuXbGiV8bnYHuHTTFlOLOu5U7PsEVYbS
+         zVdr70MPwdtPFtMyvFviHewEzUoy8KN1TAyWLRedjTg9ydVnxrcpJqLiET5LocVJTpl1
+         qi7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=E72RKePZ9QWe5v89HuDG9dmOi1TM58THK6MPfXGAxFQ=;
+        b=mXukkxexqDbFY8FbIwR3w1/YSLIcalnOEnJsAXeVm2WpmeUeCDBbHcF6GlWp5QA2JM
+         B6LoZDsDm0VKl4DYTJuxU8JGWsaKImJ35Za21iPoXxvSnIj0KgNZ0Gr6MqNIvZgTsjdy
+         kCZW09etdRm8R0pBpNtRv3OLbK2oaiyqFWOoZUFmG5mOHXQFJDL8OeuzMTqF2DlvXcG8
+         pYfa23LBSwzffXNgADTH1uLHfu/wLVev66cpF620ZqW1SOPJzYd2/eJIHZ2ldiNl2AJ/
+         +LESisd3nFZgC2Pj3JYgzyOJUV9+DWS7x3kJO8Hbmz1lhxUMdIG3JSgykSUAQpWinNL5
+         mT8w==
+X-Gm-Message-State: AOAM532sK4AlNBkyKrmKSmxtn+vsy57TR9J7GtAhyHI7egrUf5Oqn7KR
+        nh9GugEDqC8MDVHmjeisGWNDXT20PFqRc0nD0fk=
+X-Google-Smtp-Source: 
+ ABdhPJzd9lgxY2ziJprOU0r6YQs1Hj+qf3c3VygR/GB4VeUCqKevsyTn5UTRuuuhSmVDqX6i9sr8ukJjhli7wtRCXdI=
+X-Received: by 2002:a0c:85a3:: with SMTP id o32mr8043763qva.189.1593030786670;
+ Wed, 24 Jun 2020 13:33:06 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:43 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-6-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 05/22] kbuild: lto: postpone objtool
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With LTO, LLVM bitcode won't be compiled into native code until
+modpost_link, or modfinal for modules. This change postpones calls
+to objtool until after these steps.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ include/linux/compiler.h  |  2 +-
+ lib/Kconfig.debug         |  2 +-
+ scripts/Makefile.build    |  2 ++
+ scripts/Makefile.modfinal | 15 +++++++++++++++
+ 4 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 30827f82ad62..12b115152532 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -120,7 +120,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
+ /* Annotate a C jump table to allow objtool to follow the code flow */
+ #define __annotate_jump_table __section(.rodata..c_jump_table)
+ 
+-#ifdef CONFIG_DEBUG_ENTRY
++#if defined(CONFIG_DEBUG_ENTRY) || defined(CONFIG_LTO_CLANG)
+ /* Begin/end of an instrumentation safe region */
+ #define instrumentation_begin() ({					\
+ 	asm volatile("%c0:\n\t"						\
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 9ad9210d70a1..9fdba71c135a 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -399,7 +399,7 @@ config STACK_VALIDATION
+ 
+ config VMLINUX_VALIDATION
+ 	bool
+-	depends on STACK_VALIDATION && DEBUG_ENTRY && !PARAVIRT
++	depends on STACK_VALIDATION && (DEBUG_ENTRY || LTO_CLANG) && !PARAVIRT
+ 	default y
+ 
+ config DEBUG_FORCE_WEAK_PER_CPU
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 64e99f4baa5b..82977350f5a6 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -226,6 +226,7 @@ endif # CC_USING_PATCHABLE_FUNCTION_ENTRY
+ endif # CONFIG_FTRACE_MCOUNT_RECORD
+ 
+ ifdef CONFIG_STACK_VALIDATION
++ifndef CONFIG_LTO_CLANG
+ ifneq ($(SKIP_STACK_VALIDATION),1)
+ 
+ __objtool_obj := $(objtree)/tools/objtool/objtool
+@@ -258,6 +259,7 @@ objtool_obj = $(if $(patsubst y%,, \
+ 	$(__objtool_obj))
+ 
+ endif # SKIP_STACK_VALIDATION
++endif # CONFIG_LTO_CLANG
+ endif # CONFIG_STACK_VALIDATION
+ 
+ # Rebuild all objects when objtool changes, or is enabled/disabled.
+diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
+index d168f0cfe67c..9f1df2f1fab5 100644
+--- a/scripts/Makefile.modfinal
++++ b/scripts/Makefile.modfinal
+@@ -48,6 +48,21 @@ endif # CC_USING_PATCHABLE_FUNCTION_ENTRY
+ endif # CC_USING_RECORD_MCOUNT
+ endif # CONFIG_FTRACE_MCOUNT_RECORD
+ 
++ifdef CONFIG_STACK_VALIDATION
++ifneq ($(SKIP_STACK_VALIDATION),1)
++cmd_ld_ko_o +=								\
++	$(objtree)/tools/objtool/objtool				\
++		$(if $(CONFIG_UNWINDER_ORC),orc generate,check)		\
++		--module						\
++		$(if $(CONFIG_FRAME_POINTER),,--no-fp)			\
++		$(if $(CONFIG_GCOV_KERNEL),--no-unreachable,)		\
++		$(if $(CONFIG_RETPOLINE),--retpoline,)			\
++		$(if $(CONFIG_X86_SMAP),--uaccess,)			\
++		$(@:.ko=$(prelink-ext).o);
++
++endif # SKIP_STACK_VALIDATION
++endif # CONFIG_STACK_VALIDATION
++
+ endif # CONFIG_LTO_CLANG
+ 
+ quiet_cmd_ld_ko_o = LD [M]  $@
+
+From patchwork Wed Jun 24 20:31:44 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263555
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED279C433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:18 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id CAB5E2084D
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="ri578dhL"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406460AbgFXUdR (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50520 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406459AbgFXUdK (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:10 -0400
+Received: from mail-qt1-x849.google.com (mail-qt1-x849.google.com
+ [IPv6:2607:f8b0:4864:20::849])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CECE7C061573
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:09 -0700 (PDT)
+Received: by mail-qt1-x849.google.com with SMTP id t32so2448253qth.2
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=7CIu5VjUyqeUAWF5g9yThD8i7PrniBSkPgVIeHI/Dgw=;
+        b=ri578dhLvQe03PuVkYI/KosO3BmuE994j1VVuunF6mqXcSxoUchnm+hnogX96YG7Yx
+         yI/MHeu9q9kVZVlnIIydNSi+r5iCLXjTZcnO6Uxh+hmUL4ed/4KhiHZWp/xtvwTh9cIK
+         SomuMXc3FlUpv/wxq+AMmks9S70kXGIVSq6hdIig9pY/BRVFkIkq59gCCp2yYhdgtpZ+
+         TZxSgxiOsR9AcdF9rr0muiREjAZMfpam4EUBzlvonJ5mc1omg9Z9rzCkOz4lybvX42iW
+         cfZVoIgjekwd1lX3DuJT3IjQ4IeC9YVCNgBTDnUF1CG7cfbw3hlLKLyVFbznVgBNgaOl
+         aGRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=7CIu5VjUyqeUAWF5g9yThD8i7PrniBSkPgVIeHI/Dgw=;
+        b=LWoT1VB4I9jnvM7bnJxXjgyQuLPCowwOm3xENmb5+LWrja2mtRl8BtV1k1QP7s5Mzp
+         nd+BUr4jecvXh/GO2l2Vo+WFcv90dnhoU0M/2x/MqMU57etH3TjnsBqSKYEYVaqQoWLS
+         4CeVFI8eG+rzrQDbyv4UqrbFb+oESERfKMUCVx3sFlOsXaUo8uq87F1lOmHgKvzsHHHT
+         rcu0kp0yHajUsJz1y4c34xkDYTsvoLokrCLL0dZ6npyz1ZZsdmxTTsUsMjC2v1MfMjeX
+         ayDl6vLYJvCqLQ+6eShTyZuiBITlhdzJX/BC1TnizVVS2mrofrLXTLpzkqpa7aTCksDo
+         kZnQ==
+X-Gm-Message-State: AOAM533506mfXWKliplJK44l4m40HX+/H8ITVJYNZQX4xdf0u5qtXLzY
+        qm1qkwZJ4kectc2Cnn3DjwrEyWeKrxgIOSg84dY=
+X-Google-Smtp-Source: 
+ ABdhPJwCkKca/LbhSSbnwwC5SMdz9q9IjLlaNhvBawmgAX2Ds09jajOGxxF388XJGbRiV3n2n5vnK/squwZiJ1CODnM=
+X-Received: by 2002:ad4:47b2:: with SMTP id
+ a18mr33619619qvz.121.1593030789019;
+ Wed, 24 Jun 2020 13:33:09 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:44 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-7-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 06/22] kbuild: lto: limit inlining
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>,
+        George Burgess IV <gbiv@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+This change limits function inlining across translation unit
+boundaries in order to reduce the binary size with LTO.
+
+The -import-instr-limit flag defines a size limit, as the number
+of LLVM IR instructions, for importing functions from other TUs.
+The default value is 100, and decreasing it to 5 reduces the size
+of a stripped arm64 defconfig vmlinux by 11%.
+
+Suggested-by: George Burgess IV <gbiv@google.com>
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ Makefile | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 3a7e5e5c17b9..ee66513a5b66 100644
+--- a/Makefile
++++ b/Makefile
+@@ -894,6 +894,10 @@ else
+ CC_FLAGS_LTO_CLANG := -flto
+ endif
+ CC_FLAGS_LTO_CLANG += -fvisibility=default
++
++# Limit inlining across translation units to reduce binary size
++LD_FLAGS_LTO_CLANG := -mllvm -import-instr-limit=5
++KBUILD_LDFLAGS += $(LD_FLAGS_LTO_CLANG)
+ endif
+ 
+ ifdef CONFIG_LTO
+
+From patchwork Wed Jun 24 20:31:45 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263572
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95879C433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:58 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 6D8C12084D
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="VR9flySj"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406721AbgFXUe4 (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:34:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50538 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406475AbgFXUdN (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:13 -0400
+Received: from mail-qt1-x849.google.com (mail-qt1-x849.google.com
+ [IPv6:2607:f8b0:4864:20::849])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B756FC061796
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:11 -0700 (PDT)
+Received: by mail-qt1-x849.google.com with SMTP id e8so2409118qtq.22
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:11 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=BYARsb6kk5gBajh2Z9y53LZQA7+hhrma13n1XSCdmOU=;
+        b=VR9flySjUJwP/ToHZH5/xrbg3xtifUP2l8XzNOwvghrmkrOPlt0NBT0Anzq/fEaIeF
+         KEoHKkAEPYQr1ae9axGCAMJQRNQ8Zn+uof7PhiL9L7JyAKcAQBsmFp+OoG91RU7+TJkG
+         Yd8jJUh3wkbN8zyU9bxEpyOLO9sldP4qCwirdkQYZ3Ena38i/lEtgSWPv5cRv7bJRl2N
+         UiX9uZX38aM3TP9J7+dUEiU2tJ3qLNH5BAb5fEeb58kPFpZiXEQBsf9meYLOuEa3jWcW
+         FzXtiDx3izZRRi7FrJm7yt+UOltEWjza1vZCyR1pwcnJuQrqqarBC6T6qstSc9SdhCTJ
+         LIZQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=BYARsb6kk5gBajh2Z9y53LZQA7+hhrma13n1XSCdmOU=;
+        b=NBwpiioo0kj9scwSpqtBxwmQIFCAZEXTZF4o6CDgvdRPi7scc77js+O0PviLO/uoDo
+         9RxblgneUJJWbcD87yncv9Z+Y1IhiOwLCe2pbVLrVQL/Gk/cbdLP+Y5fCD70rlrvlZhQ
+         Q3dAuSwAKhjJrnAqvNCeGz2leIKR27kTOPnkGdxBK9J6VRup9szD49hOVRqGhKEjvXLb
+         cSL2B4Z6HhUoaYzidCzY5RItBxqPFWSGBVkRF8fMMOI3wTxkk8c66dAdMA6bTmqHtHOK
+         o9RZEN54sseQ+fe6typaAMzJfWxFWgFkj0/1mbdalw5MibmVFnomp1/loWn9RhV0COKG
+         loEQ==
+X-Gm-Message-State: AOAM530u5ij4FswDyZXCpOORWVm1Z9Wa6EksB9P+KqoqIz/q3D2bXdFH
+        wqm1SA0yh0sgAv0ZKrgintam8rfyzpwDbjZXe5M=
+X-Google-Smtp-Source: 
+ ABdhPJxdPEjdTvmHsLqQfGRhGHv9oPLaWCC1GyywhBzfg/9OiO3i8xn63G4zB3hyB9DGHni9+sZkZnE+i9lcXDX/20s=
+X-Received: by 2002:a0c:9d44:: with SMTP id n4mr20638647qvf.35.1593030790865;
+ Wed, 24 Jun 2020 13:33:10 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:45 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-8-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 07/22] kbuild: lto: merge module sections
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+LLD always splits sections with LTO, which increases module sizes. This
+change adds a linker script that merges the split sections in the final
+module and discards the .eh_frame section that LLD may generate.
+
+Suggested-by: Nick Desaulniers <ndesaulniers@google.com>
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ Makefile               |  2 ++
+ scripts/module-lto.lds | 26 ++++++++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
+ create mode 100644 scripts/module-lto.lds
+
+diff --git a/Makefile b/Makefile
+index ee66513a5b66..9ffec5fe1737 100644
+--- a/Makefile
++++ b/Makefile
+@@ -898,6 +898,8 @@ CC_FLAGS_LTO_CLANG += -fvisibility=default
+ # Limit inlining across translation units to reduce binary size
+ LD_FLAGS_LTO_CLANG := -mllvm -import-instr-limit=5
+ KBUILD_LDFLAGS += $(LD_FLAGS_LTO_CLANG)
++
++KBUILD_LDS_MODULE += $(srctree)/scripts/module-lto.lds
+ endif
+ 
+ ifdef CONFIG_LTO
+diff --git a/scripts/module-lto.lds b/scripts/module-lto.lds
+new file mode 100644
+index 000000000000..65884c652bf2
+--- /dev/null
++++ b/scripts/module-lto.lds
+@@ -0,0 +1,26 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * With CONFIG_LTO_CLANG, LLD always enables -fdata-sections and
++ * -ffunction-sections, which increases the size of the final module.
++ * Merge the split sections in the final binary.
++ */
++SECTIONS {
++	__patchable_function_entries : { *(__patchable_function_entries) }
++
++	.bss : {
++		*(.bss .bss.[0-9a-zA-Z_]*)
++		*(.bss..L* .bss..compoundliteral*)
++	}
++
++	.data : {
++		*(.data .data.[0-9a-zA-Z_]*)
++		*(.data..L* .data..compoundliteral*)
++	}
++
++	.rodata : {
++		*(.rodata .rodata.[0-9a-zA-Z_]*)
++		*(.rodata..L* .rodata..compoundliteral*)
++	}
++
++	.text : { *(.text .text.[0-9a-zA-Z_]*) }
++}
+
+From patchwork Wed Jun 24 20:31:46 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263570
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70B0DC433E1
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:40 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 507952081A
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="EWRzLy7u"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406702AbgFXUej (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:34:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50550 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406486AbgFXUdO (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:14 -0400
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B66EC061797
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:13 -0700 (PDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id r17so3465909ybj.22
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=RZTReFFMdjgTHNlONDHd9zt1v7eMyKbgxXLu5A5pzj0=;
+        b=EWRzLy7ubn55a8LmKy3CDH4ngbdy7XK7KBx2ndgKQ/3d1qkgK3E2e2e0LoML9LtpAP
+         te8DFa082g+gVIfEAqVPkw42n2K5N8oZDQPqI2EE+tN42iDW7P8u4zkwFKaeUaEIL3oq
+         RsZa2tBkB8ErLDOh0+LYJEGFNduXUPYCZZp6PS5HSeXJMWIblGduZ6jmagNoIsWizsER
+         wasijgerBJQ81R7rPMfgWDc43sju3PnN23fU0SKh+4T9fa3wRlwROOUy5biDfDpraPBM
+         LfcrqPMgzOl+e9NbqEnHTOdpcfO4/PQ3tkVTmfAbrRs5+l+SSnKRsruNnEenHpqLqPiQ
+         nuGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=RZTReFFMdjgTHNlONDHd9zt1v7eMyKbgxXLu5A5pzj0=;
+        b=cF4NgPfzjZXnxOpHc+J7NFMvJ3ybyIbP7xM2YV+ae0iL2bRAs4TCAaF8kFB5Sc8+a+
+         roI3tq7JufXcQpbvU4Coy6m9udRa8HoUua52hyfuzYWzs4HqdOLSAa9ofwfCjI2OtsgE
+         CKi/l45ANtgHfcwjnasCjpwaaWYQB+pyu/l/Tudtu0B02XNh+PQBdexFRLC52OVTf8hs
+         +2c+wTl9hKziyRRDrJplU3HhOGZrJ0dbrOWJxsbETwlYYYJEBPnV7Q17/1mae6CmUesE
+         FAiHLjE5ufDgLlV+LaHlfz0QNzZuyCCAGoGTmLH8MXrf8AY4xjS+O8t08iYfrq30JwJ4
+         8fUA==
+X-Gm-Message-State: AOAM533rDU6Ps4xXEmpf07qk1njcWN6t3QvpPM3PgTwH7oF7Km0Zfy+o
+        V6rL4F+VQWOwXKGEDuTEnaoE9ia2FSMEhjnkOjI=
+X-Google-Smtp-Source: 
+ ABdhPJyU2t1AXfcgSNz/10D8PjugKl8rMw6I/kYhEGKclSW1I55A11LPtvbV37/K4/NXZ5XrSzlUdSrpZ+Ia6K6teRs=
+X-Received: by 2002:a25:4e0a:: with SMTP id
+ c10mr44794280ybb.346.1593030792698;
+ Wed, 24 Jun 2020 13:33:12 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:46 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-9-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 08/22] kbuild: lto: remove duplicate dependencies from .mod
+ files
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With LTO, llvm-nm prints out symbols for each archive member
+separately, which results in a lot of duplicate dependencies in the
+.mod file when CONFIG_TRIM_UNUSED_SYMS is enabled. When a module
+consists of several compilation units, the output can exceed the
+default xargs command size limit and split the dependency list to
+multiple lines, which results in used symbols getting trimmed.
+
+This change removes duplicate dependencies, which will reduce the
+probability of this happening and makes .mod files smaller and
+easier to read.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+---
+ scripts/Makefile.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 82977350f5a6..82b465ce3ca0 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -291,7 +291,7 @@ endef
+ 
+ # List module undefined symbols (or empty line if not enabled)
+ ifdef CONFIG_TRIM_UNUSED_KSYMS
+-cmd_undef_syms = $(NM) $< | sed -n 's/^  *U //p' | xargs echo
++cmd_undef_syms = $(NM) $< | sed -n 's/^  *U //p' | sort -u | xargs echo
+ else
+ cmd_undef_syms = echo
+ endif
+
+From patchwork Wed Jun 24 20:31:47 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263569
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58675C433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:38 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 25E182081A
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="GbaM26uq"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406693AbgFXUeg (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:34:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50566 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406493AbgFXUdP (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:15 -0400
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55691C06179A
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:15 -0700 (PDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id r17so3465991ybj.22
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=S7/JzDwDdHoacgX6HvX2Jr2gVU2/RbvZoPut7JAQqiU=;
+        b=GbaM26uqdS3Vdn7y/4tYXw9WRnWXuMV2obYfkzVrTaJ0mYtswhFhf+0vt6bJlB8Tyg
+         SsJduDBm2w+U3nsaOr1HASJhjnKenhtFzEzZEJ1BdYCYZ4WUgPZzBQtVTGMw6PiUH/Rv
+         bul94Ghqr6xxTHUblFMZFutUETTCwdziKLRISNyn6cw0oFgemCdB69tmR7KshvVBvCrb
+         lr/U4Ye5y8RJiY4ppLsyOzho5N14wDkBdTPJK9avH04PiX2+sruAUeNKN/W0VXCW4DS5
+         BLaS1bJ+bnHCjleMO2kHOyBPUN8uMtrR8cqySobnViK77k3HeWm/l1v826SwgG3uVULl
+         /5/Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=S7/JzDwDdHoacgX6HvX2Jr2gVU2/RbvZoPut7JAQqiU=;
+        b=CO2AZwSGrEd3nq6eq+K27xqzaCR4W5KM4qxdvZ4yQ/4D++60AwbcnGdD5weYhcTaIh
+         9rNg+mVgvS18jddWlQi6M5/m6QfQTqlLdRVOFtlrxheAGIe4TNosGJyKRvJhLJYeY6S0
+         LFS0YrqcbbRvSGULcTq2XCIMSM43Tp6do4Ve3mxPyFypOvJbMGXe6xbKNiH0z38CLcxb
+         zV7DKiJwmNUmfuclLVw4mBXcYm0AKJzVJLCjVfturIJ9QyCWGFM913EEuRlCypB54xB1
+         gJ5lCAKoTB3gkiFmiCBNYDY5NRIdbZR2GwyNi9NJAhcdREm2lOwFBk1Fe9f8Xb1qLuby
+         WsiA==
+X-Gm-Message-State: AOAM5336svHxNRpFsTjrDOWRpIc2RMnkES5fHqCGFT2GzpmVFF1L3uw2
+        5JsaZ8r0HYbLDglTcgFe81oHygPMujjQJ+kk2sI=
+X-Google-Smtp-Source: 
+ ABdhPJzyJsK9nvJbVcqyv2JogyV+HhGhFMYJ3uGRw+AE0p+Je0Oon8fPN8IIasUK4xLrPwCevx7L9/glgNckOd8vEzE=
+X-Received: by 2002:a25:6d02:: with SMTP id i2mr36280555ybc.365.1593030794516;
+ Wed, 24 Jun 2020 13:33:14 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:47 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-10-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 09/22] init: lto: ensure initcall ordering
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With LTO, the compiler doesn't necessarily obey the link order for
+initcalls, and initcall variables need globally unique names to avoid
+collisions at link time.
+
+This change exports __KBUILD_MODNAME and adds the initcall_id() macro,
+which uses it together with __COUNTER__ and __LINE__ to help ensure
+these variables have unique names, and moves each variable to its own
+section when LTO is enabled, so the correct order can be specified using
+a linker script.
+
+The generate_initcall_ordering.pl script uses nm to find initcalls from
+the object files passed to the linker, and generates a linker script
+that specifies the intended order. With LTO, the script is called in
+link-vmlinux.sh.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ include/linux/init.h               |  52 +++++-
+ scripts/Makefile.lib               |   6 +-
+ scripts/generate_initcall_order.pl | 270 +++++++++++++++++++++++++++++
+ scripts/link-vmlinux.sh            |  14 ++
+ 4 files changed, 333 insertions(+), 9 deletions(-)
+ create mode 100755 scripts/generate_initcall_order.pl
+
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 212fc9e2f691..af638cd6dd52 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -184,19 +184,57 @@ extern bool initcall_debug;
+  * as KEEP() in the linker script.
+  */
+ 
++/* Format: <modname>__<counter>_<line>_<fn> */
++#define __initcall_id(fn)					\
++	__PASTE(__KBUILD_MODNAME,				\
++	__PASTE(__,						\
++	__PASTE(__COUNTER__,					\
++	__PASTE(_,						\
++	__PASTE(__LINE__,					\
++	__PASTE(_, fn))))))
++
++/* Format: __<prefix>__<iid><id> */
++#define __initcall_name(prefix, __iid, id)			\
++	__PASTE(__,						\
++	__PASTE(prefix,						\
++	__PASTE(__,						\
++	__PASTE(__iid, id))))
++
++#ifdef CONFIG_LTO_CLANG
++/*
++ * With LTO, the compiler doesn't necessarily obey link order for
++ * initcalls. In order to preserve the correct order, we add each
++ * variable into its own section and generate a linker script (in
++ * scripts/link-vmlinux.sh) to specify the order of the sections.
++ */
++#define __initcall_section(__sec, __iid)			\
++	#__sec ".init.." #__iid
++#else
++#define __initcall_section(__sec, __iid)			\
++	#__sec ".init"
++#endif
++
+ #ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
+-#define ___define_initcall(fn, id, __sec)			\
++#define ____define_initcall(fn, __name, __sec)			\
+ 	__ADDRESSABLE(fn)					\
+-	asm(".section	\"" #__sec ".init\", \"a\"	\n"	\
+-	"__initcall_" #fn #id ":			\n"	\
++	asm(".section	\"" __sec "\", \"a\"		\n"	\
++	    __stringify(__name) ":			\n"	\
+ 	    ".long	" #fn " - .			\n"	\
+ 	    ".previous					\n");
+ #else
+-#define ___define_initcall(fn, id, __sec) \
+-	static initcall_t __initcall_##fn##id __used \
+-		__attribute__((__section__(#__sec ".init"))) = fn;
++#define ____define_initcall(fn, __name, __sec)			\
++	static initcall_t __name __used 			\
++		__attribute__((__section__(__sec))) = fn;
+ #endif
+ 
++#define __unique_initcall(fn, id, __sec, __iid)			\
++	____define_initcall(fn,					\
++		__initcall_name(initcall, __iid, id),		\
++		__initcall_section(__sec, __iid))
++
++#define ___define_initcall(fn, id, __sec)			\
++	__unique_initcall(fn, id, __sec, __initcall_id(fn))
++
+ #define __define_initcall(fn, id) ___define_initcall(fn, id, .initcall##id)
+ 
+ /*
+@@ -236,7 +274,7 @@ extern bool initcall_debug;
+ #define __exitcall(fn)						\
+ 	static exitcall_t __exitcall_##fn __exit_call = fn
+ 
+-#define console_initcall(fn)	___define_initcall(fn,, .con_initcall)
++#define console_initcall(fn)	___define_initcall(fn, con, .con_initcall)
+ 
+ struct obs_kernel_param {
+ 	const char *str;
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 99ac59c59826..17447354b543 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -106,9 +106,11 @@ target-stem = $(basename $(patsubst $(obj)/%,%,$@))
+ # These flags are needed for modversions and compiling, so we define them here
+ # $(modname_flags) defines KBUILD_MODNAME as the name of the module it will
+ # end up in (or would, if it gets compiled in)
+-name-fix = $(call stringify,$(subst $(comma),_,$(subst -,_,$1)))
++name-fix-token = $(subst $(comma),_,$(subst -,_,$1))
++name-fix = $(call stringify,$(call name-fix-token,$1))
+ basename_flags = -DKBUILD_BASENAME=$(call name-fix,$(basetarget))
+-modname_flags  = -DKBUILD_MODNAME=$(call name-fix,$(modname))
++modname_flags  = -DKBUILD_MODNAME=$(call name-fix,$(modname)) \
++		 -D__KBUILD_MODNAME=$(call name-fix-token,$(modname))
+ modfile_flags  = -DKBUILD_MODFILE=$(call stringify,$(modfile))
+ 
+ orig_c_flags   = $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) \
+diff --git a/scripts/generate_initcall_order.pl b/scripts/generate_initcall_order.pl
+new file mode 100755
+index 000000000000..fe83aec2b51e
+--- /dev/null
++++ b/scripts/generate_initcall_order.pl
+@@ -0,0 +1,270 @@
++#!/usr/bin/env perl
++# SPDX-License-Identifier: GPL-2.0
++#
++# Generates a linker script that specifies the correct initcall order.
++#
++# Copyright (C) 2019 Google LLC
++
++use strict;
++use warnings;
++use IO::Handle;
++use IO::Select;
++use POSIX ":sys_wait_h";
++
++my $nm = $ENV{'NM'} || die "$0: ERROR: NM not set?";
++my $objtree = $ENV{'objtree'} || '.';
++
++## currently active child processes
++my $jobs = {};		# child process pid -> file handle
++## results from child processes
++my $results = {};	# object index -> [ { level, secname }, ... ]
++
++## reads _NPROCESSORS_ONLN to determine the maximum number of processes to
++## start
++sub get_online_processors {
++	open(my $fh, "getconf _NPROCESSORS_ONLN 2>/dev/null |")
++		or die "$0: ERROR: failed to execute getconf: $!";
++	my $procs = <$fh>;
++	close($fh);
++
++	if (!($procs =~ /^\d+$/)) {
++		return 1;
++	}
++
++	return int($procs);
++}
++
++## writes results to the parent process
++## format: <file index> <initcall level> <base initcall section name>
++sub write_results {
++	my ($index, $initcalls) = @_;
++
++	# sort by the counter value to ensure the order of initcalls within
++	# each object file is correct
++	foreach my $counter (sort { $a <=> $b } keys(%{$initcalls})) {
++		my $level = $initcalls->{$counter}->{'level'};
++
++		# section name for the initcall function
++		my $secname = $initcalls->{$counter}->{'module'} . '__' .
++			      $counter . '_' .
++			      $initcalls->{$counter}->{'line'} . '_' .
++			      $initcalls->{$counter}->{'function'};
++
++		print "$index $level $secname\n";
++	}
++}
++
++## reads a result line from a child process and adds it to the $results array
++sub read_results{
++	my ($fh) = @_;
++
++	# each child prints out a full line w/ autoflush and exits after the
++	# last line, so even if buffered I/O blocks here, it shouldn't block
++	# very long
++	my $data = <$fh>;
++
++	if (!defined($data)) {
++		return 0;
++	}
++
++	chomp($data);
++
++	my ($index, $level, $secname) = $data =~
++		/^(\d+)\ ([^\ ]+)\ (.*)$/;
++
++	if (!defined($index) ||
++		!defined($level) ||
++		!defined($secname)) {
++		die "$0: ERROR: child process returned invalid data: $data\n";
++	}
++
++	$index = int($index);
++
++	if (!exists($results->{$index})) {
++		$results->{$index} = [];
++	}
++
++	push (@{$results->{$index}}, {
++		'level'   => $level,
++		'secname' => $secname
++	});
++
++	return 1;
++}
++
++## finds initcalls from an object file or all object files in an archive, and
++## writes results back to the parent process
++sub find_initcalls {
++	my ($index, $file) = @_;
++
++	die "$0: ERROR: file $file doesn't exist?" if (! -f $file);
++
++	open(my $fh, "\"$nm\" --defined-only \"$file\" 2>/dev/null |")
++		or die "$0: ERROR: failed to execute \"$nm\": $!";
++
++	my $initcalls = {};
++
++	while (<$fh>) {
++		chomp;
++
++		# check for the start of a new object file (if processing an
++		# archive)
++		my ($path)= $_ =~ /^(.+)\:$/;
++
++		if (defined($path)) {
++			write_results($index, $initcalls);
++			$initcalls = {};
++			next;
++		}
++
++		# look for an initcall
++		my ($module, $counter, $line, $symbol) = $_ =~
++			/[a-z]\s+__initcall__(\S*)__(\d+)_(\d+)_(.*)$/;
++
++		if (!defined($module)) {
++			$module = ''
++		}
++
++		if (!defined($counter) ||
++			!defined($line) ||
++			!defined($symbol)) {
++			next;
++		}
++
++		# parse initcall level
++		my ($function, $level) = $symbol =~
++			/^(.*)((early|rootfs|con|[0-9])s?)$/;
++
++		die "$0: ERROR: invalid initcall name $symbol in $file($path)"
++			if (!defined($function) || !defined($level));
++
++		$initcalls->{$counter} = {
++			'module'   => $module,
++			'line'     => $line,
++			'function' => $function,
++			'level'    => $level,
++		};
++	}
++
++	close($fh);
++	write_results($index, $initcalls);
++}
++
++## waits for any child process to complete, reads the results, and adds them to
++## the $results array for later processing
++sub wait_for_results {
++	my ($select) = @_;
++
++	my $pid = 0;
++	do {
++		# unblock children that may have a full write buffer
++		foreach my $fh ($select->can_read(0)) {
++			read_results($fh);
++		}
++
++		# check for children that have exited, read the remaining data
++		# from them, and clean up
++		$pid = waitpid(-1, WNOHANG);
++		if ($pid > 0) {
++			if (!exists($jobs->{$pid})) {
++				next;
++			}
++
++			my $fh = $jobs->{$pid};
++			$select->remove($fh);
++
++			while (read_results($fh)) {
++				# until eof
++			}
++
++			close($fh);
++			delete($jobs->{$pid});
++		}
++	} while ($pid > 0);
++}
++
++## forks a child to process each file passed in the command line and collects
++## the results
++sub process_files {
++	my $index = 0;
++	my $njobs = get_online_processors();
++	my $select = IO::Select->new();
++
++	while (my $file = shift(@ARGV)) {
++		# fork a child process and read it's stdout
++		my $pid = open(my $fh, '-|');
++
++		if (!defined($pid)) {
++			die "$0: ERROR: failed to fork: $!";
++		} elsif ($pid) {
++			# save the child process pid and the file handle
++			$select->add($fh);
++			$jobs->{$pid} = $fh;
++		} else {
++			# in the child process
++			STDOUT->autoflush(1);
++			find_initcalls($index, "$objtree/$file");
++			exit;
++		}
++
++		$index++;
++
++		# limit the number of children to $njobs
++		if (scalar(keys(%{$jobs})) >= $njobs) {
++			wait_for_results($select);
++		}
++	}
++
++	# wait for the remaining children to complete
++	while (scalar(keys(%{$jobs})) > 0) {
++		wait_for_results($select);
++	}
++}
++
++sub generate_initcall_lds() {
++	process_files();
++
++	my $sections = {};	# level -> [ secname, ...]
++
++	# sort results to retain link order and split to sections per
++	# initcall level
++	foreach my $index (sort { $a <=> $b } keys(%{$results})) {
++		foreach my $result (@{$results->{$index}}) {
++			my $level = $result->{'level'};
++
++			if (!exists($sections->{$level})) {
++				$sections->{$level} = [];
++			}
++
++			push(@{$sections->{$level}}, $result->{'secname'});
++		}
++	}
++
++	die "$0: ERROR: no initcalls?" if (!keys(%{$sections}));
++
++	# print out a linker script that defines the order of initcalls for
++	# each level
++	print "SECTIONS {\n";
++
++	foreach my $level (sort(keys(%{$sections}))) {
++		my $section;
++
++		if ($level eq 'con') {
++			$section = '.con_initcall.init';
++		} else {
++			$section = ".initcall${level}.init";
++		}
++
++		print "\t${section} : {\n";
++
++		foreach my $secname (@{$sections->{$level}}) {
++			print "\t\t*(${section}..${secname}) ;\n";
++		}
++
++		print "\t}\n";
++	}
++
++	print "}\n";
++}
++
++generate_initcall_lds();
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+index c72f5d0238f1..42c73e24e820 100755
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -39,6 +39,16 @@ info()
+ 	fi
+ }
+ 
++# Generate a linker script to ensure correct ordering of initcalls.
++gen_initcalls()
++{
++	info GEN .tmp_initcalls.lds
++
++	${srctree}/scripts/generate_initcall_order.pl \
++		${KBUILD_VMLINUX_OBJS} ${KBUILD_VMLINUX_LIBS} \
++		> .tmp_initcalls.lds
++}
++
+ # If CONFIG_LTO_CLANG is selected, collect generated symbol versions into
+ # .tmp_symversions.lds
+ gen_symversions()
+@@ -70,6 +80,9 @@ modpost_link()
+ 		--end-group"
+ 
+ 	if [ -n "${CONFIG_LTO_CLANG}" ]; then
++		gen_initcalls
++		lds="-T .tmp_initcalls.lds"
++
+ 		if [ -n "${CONFIG_MODVERSIONS}" ]; then
+ 			gen_symversions
+ 			lds="${lds} -T .tmp_symversions.lds"
+@@ -283,6 +296,7 @@ cleanup()
+ {
+ 	rm -f .btf.*
+ 	rm -f .tmp_System.map
++	rm -f .tmp_initcalls.lds
+ 	rm -f .tmp_symversions.lds
+ 	rm -f .tmp_vmlinux*
+ 	rm -f System.map
+
+From patchwork Wed Jun 24 20:31:48 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263556
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66210C433E0
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:23 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 40BCB2082F
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="egWHIaow"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406535AbgFXUdW (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50550 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406496AbgFXUdR (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:17 -0400
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com
+ [IPv6:2607:f8b0:4864:20::b49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19CE5C06179B
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:17 -0700 (PDT)
+Received: by mail-yb1-xb49.google.com with SMTP id s9so3500063ybj.18
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=edIkT6p07lpLePHQP+aYqsXpIzZ2+6woe9Vgp5gIJI4=;
+        b=egWHIaowycA2j4XZam7KmKMW2pQ89pwKSamnnESmMZjXlGrpDiBMEKX0ymsIpEUG5Q
+         Q/5jq7wq9EUsrGut0D7nH0OzX+X6PmQ4BsvV+OFdyIwItO18fwnnqRcjLL/etsokICn2
+         kJA/eOpcLnRws54bEMudJOUeKnPBfutms4HPc2YVoU7pUuEXirkoHEo/+ZivIPBIpcjm
+         QAZkoUB6YhA3LjQHac3tKT7W83SDE0ybUBlgAkHod3lCaXJMmDghQ2Hjaer2BjebhMdJ
+         6tJB8nkEwUWILUX4LAlqgG6pcwYlTLpv3LHaWpmgIRcC8eGvhD6AT800VKeaZEkZUUaI
+         CVRw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=edIkT6p07lpLePHQP+aYqsXpIzZ2+6woe9Vgp5gIJI4=;
+        b=ZY/szmQ6Ui5Bfzea6tVmC2LO1KNnZn4hq7rfgaeqYGxoJU53FbtqEBI7VpJpyF8V/h
+         1Myi4/eSfV0vj57sQCv5RYxHZRh1OmGUeMS/mqk+ztOJ3hkSN0MaALVjkskxyemBEvUD
+         Ov3sN8YbsBZH3iuJEDzVgp7zk4e6bvdTGDpqyvpv1htMPpwT4Og6Kmwwpz8Xuna7EUYz
+         GOINWzYN5NKA14mV732utvBih3ZpHER/mRE1Fkr+4pLSPLHyUpv5o+1DgZ4Qg8HfgVmO
+         AW4tbFsh9abnCrvMTYPEBjwr/cQeD/MIE0xcoRDlCQKN2d1AXJX3cz7cLK9AQd70qhf1
+         oZEQ==
+X-Gm-Message-State: AOAM531nbEHiTfM8FBFV4SwYu7B3nyGf1OIm7Dt5qluWDVjOZclitC9U
+        AUO6iB2uPTTpTxi9ADMQWg4MnF7VR/H9pPJeX9c=
+X-Google-Smtp-Source: 
+ ABdhPJydy+dzRZtnkDF9CbEhIOBTVruIEpnrPFlxeYrxbEJR+QigE4MSYlaU55SmzK1okb/YgyaF3Z/PviJDUt9UdRg=
+X-Received: by 2002:a25:2fc5:: with SMTP id
+ v188mr45630243ybv.130.1593030796295;
+ Wed, 24 Jun 2020 13:33:16 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:48 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-11-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 10/22] init: lto: fix PREL32 relocations
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With LTO, the compiler can rename static functions to avoid global
+naming collisions. As initcall functions are typically static,
+renaming can break references to them in inline assembly. This
+change adds a global stub with a stable name for each initcall to
+fix the issue when PREL32 relocations are used.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ include/linux/init.h | 30 ++++++++++++++++++++++++++----
+ 1 file changed, 26 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/init.h b/include/linux/init.h
+index af638cd6dd52..5b4bdc5a8399 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -209,26 +209,48 @@ extern bool initcall_debug;
+  */
+ #define __initcall_section(__sec, __iid)			\
+ 	#__sec ".init.." #__iid
++
++/*
++ * With LTO, the compiler can rename static functions to avoid
++ * global naming collisions. We use a global stub function for
++ * initcalls to create a stable symbol name whose address can be
++ * taken in inline assembly when PREL32 relocations are used.
++ */
++#define __initcall_stub(fn, __iid, id)				\
++	__initcall_name(initstub, __iid, id)
++
++#define __define_initcall_stub(__stub, fn)			\
++	int __init __stub(void)					\
++	{ 							\
++		return fn();					\
++	}							\
++	__ADDRESSABLE(__stub)
+ #else
+ #define __initcall_section(__sec, __iid)			\
+ 	#__sec ".init"
++
++#define __initcall_stub(fn, __iid, id)	fn
++
++#define __define_initcall_stub(__stub, fn)			\
++	__ADDRESSABLE(fn)
+ #endif
+ 
+ #ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
+-#define ____define_initcall(fn, __name, __sec)			\
+-	__ADDRESSABLE(fn)					\
++#define ____define_initcall(fn, __stub, __name, __sec)		\
++	__define_initcall_stub(__stub, fn)			\
+ 	asm(".section	\"" __sec "\", \"a\"		\n"	\
+ 	    __stringify(__name) ":			\n"	\
+-	    ".long	" #fn " - .			\n"	\
++	    ".long	" __stringify(__stub) " - .	\n"	\
+ 	    ".previous					\n");
+ #else
+-#define ____define_initcall(fn, __name, __sec)			\
++#define ____define_initcall(fn, __unused, __name, __sec)	\
+ 	static initcall_t __name __used 			\
+ 		__attribute__((__section__(__sec))) = fn;
+ #endif
+ 
+ #define __unique_initcall(fn, id, __sec, __iid)			\
+ 	____define_initcall(fn,					\
++		__initcall_stub(fn, __iid, id),			\
+ 		__initcall_name(initcall, __iid, id),		\
+ 		__initcall_section(__sec, __iid))
+ 
+
+From patchwork Wed Jun 24 20:31:49 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263568
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00BA9C433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:31 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id D954D2081A
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="I3ECgl1r"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406677AbgFXUe3 (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:34:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50578 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406508AbgFXUdT (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:19 -0400
+Received: from mail-qt1-x84a.google.com (mail-qt1-x84a.google.com
+ [IPv6:2607:f8b0:4864:20::84a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C93E1C0613ED
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:18 -0700 (PDT)
+Received: by mail-qt1-x84a.google.com with SMTP id u48so2419412qth.17
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=p5Zjwl0fzbxC+wniz47UyXQT+jPezYAnZAW9sm53Gyo=;
+        b=I3ECgl1rBLWOyBs5RtnQDte2DTgBK8OvV3bMelQO3YzMeXJZPelqzsYzrwhg4KISwq
+         Q8EP/5Rt6Nxpn5jlDw36BbBCGJdZtB2lqDV3jxoCeZsxATVA/6EywW70IFQ8KMkMtwcs
+         8ERi7Vnp6AvUX047q7Y6jPhoYIU9tYESBFs78HyX/W7KrPxM3sHVTb3fYIZB+7Vx8nAt
+         TaK2/xswynOZBsPbNiwRJQVa2aWgCfk+6/lVEiWQobeXdeiVAy43gwzfUDm/34ApF0Y4
+         fmT1yzxDDHGNjYUCuAffxFCE77GVNDIobyJaeYAtR60VuSJZiMITgzBrUO93ylah82EN
+         IIkQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=p5Zjwl0fzbxC+wniz47UyXQT+jPezYAnZAW9sm53Gyo=;
+        b=h9oWGoAiQzuN/Z93uk01mxU0TmeHKydjuv0PFS+TeVuVO6yj80MT5ZUoGW6IV8F6ok
+         LtVA4AYEXQd36XBVR/NS4JpJq243bSJzyzfoQkpfVPtlQzP3bLgkNDlZvysw56FsqXyZ
+         DGvHTYUO1wAztp+1SNj8Y0oihlBs/eb00GstzjHelSCdOMuawwSUB5Lx18eS6XTs2Jmb
+         R1CZj3K8riTWvgmgb0hZ2+iSTJvKLjZdW/QdnH/LHTzwNFpWwISaFFApmmGPgDT3POMh
+         WFUFJKL2AKs5mwYfGyId8zomAIxxvUMqLc1UtbCRCkX5rk/ng4xBKZlCbvqRSjzXR7Q2
+         /BXw==
+X-Gm-Message-State: AOAM531b3VWC+3cSW80NTavWkECXD2TV4pgJKJn4E00XMsE9QniQRtV4
+        W4XZSy4HRo9Km5c8kZmG8LMnXUplTxsY+d5K9Mg=
+X-Google-Smtp-Source: 
+ ABdhPJyshGcPxjTPdha6DvqMYpNo5yMpiv1hRNsXXOAKSMJ35QF93WrzoPN7b85RoUoCmPb47/iApkRUf/bzOcmqP9w=
+X-Received: by 2002:ad4:4526:: with SMTP id l6mr8754125qvu.16.1593030798020;
+ Wed, 24 Jun 2020 13:33:18 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:49 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-12-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 11/22] pci: lto: fix PREL32 relocations
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With LTO, the compiler can rename static functions to avoid global
+naming collisions. As PCI fixup functions are typically static,
+renaming can break references to them in inline assembly. This
+change adds a global stub to DECLARE_PCI_FIXUP_SECTION to fix the
+issue when PREL32 relocations are used.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ include/linux/pci.h | 15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index c79d83304e52..1e65e16f165a 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1909,19 +1909,24 @@ enum pci_fixup_pass {
+ };
+ 
+ #ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
+-#define __DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
+-				    class_shift, hook)			\
+-	__ADDRESSABLE(hook)						\
++#define ___DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
++				    class_shift, hook, stub)		\
++	void stub(struct pci_dev *dev) { hook(dev); }			\
+ 	asm(".section "	#sec ", \"a\"				\n"	\
+ 	    ".balign	16					\n"	\
+ 	    ".short "	#vendor ", " #device "			\n"	\
+ 	    ".long "	#class ", " #class_shift "		\n"	\
+-	    ".long "	#hook " - .				\n"	\
++	    ".long "	#stub " - .				\n"	\
+ 	    ".previous						\n");
++
++#define __DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
++				  class_shift, hook, stub)		\
++	___DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
++				  class_shift, hook, stub)
+ #define DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
+ 				  class_shift, hook)			\
+ 	__DECLARE_PCI_FIXUP_SECTION(sec, name, vendor, device, class,	\
+-				  class_shift, hook)
++				  class_shift, hook, __UNIQUE_ID(hook))
+ #else
+ /* Anonymous variables would be nice... */
+ #define DECLARE_PCI_FIXUP_SECTION(section, name, vendor, device, class,	\
+
+From patchwork Wed Jun 24 20:31:50 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263567
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0A2DC433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:20 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id AF3382081A
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:20 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="btHNoJ4L"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406667AbgFXUeS (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:34:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50592 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406516AbgFXUdV (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:21 -0400
+Received: from mail-qt1-x84a.google.com (mail-qt1-x84a.google.com
+ [IPv6:2607:f8b0:4864:20::84a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87D5DC061798
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:20 -0700 (PDT)
+Received: by mail-qt1-x84a.google.com with SMTP id u93so2430362qtd.8
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=79pxKTlkNWyJf2vmlsIGe03zgp7TGuVtfyoMyMkArK8=;
+        b=btHNoJ4LCTKmKU6iX1nY/p97V+Ay3nMJGlrn7bXF/L/XPTDGtt58AsD3Mh0Aeg8xli
+         i/d+HGMtV5Jn6jA8Cx1FqZSW6wKGv/sOjgspsd/CVSg+LkYGEeeEYLFxrYYGQ8I8QOWM
+         Cf5JM3EZjmGV5qQFBgWfzxMp2Kdb9qPFRU+2kPmr0e4ZXejzdyDXKQQDGqzly1C9+syM
+         lYUlij36WBcULQ7G2HzWI/6+G60YtbxUYFeFxnsxSan8nd8WAH4jUNFN9Tmd4BJJC3/J
+         4MhqOa97DkCrf9Gdui9rH2qj5BT7xXSCfX6fHqyZfik5WekbjJGEyd8PzAGt7HITNkeO
+         mMPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=79pxKTlkNWyJf2vmlsIGe03zgp7TGuVtfyoMyMkArK8=;
+        b=PbT0OR03LITs1r2481pji13N9ZFGz1877UCNCYKxxC4jJXhty2OIYlhifstr5vXTFQ
+         DcK2M1Sb6+uNOAISNl9bDQCS9HzWr4CeWdnvNoAtQ3LTHyAFYCuqj21VcC6ld4zUs5a8
+         hG1JA+W0kI8VDME0430fTLyN8mUwu3inDze7V+aChr248H7z6qhd66ZSaE3ri6koogV1
+         KnScYQPkpXo0k/m0MQTDWxfJA5z1UbU0mnwdNLuttijm7KzjMr+8j5ey5iTO29DQHlWt
+         XCnR3gb6sHzmr382/qVlfyRXJFyQ0Fo8aM6/bnYL/fRmud3NnoUOqHP4y8hh1WRffX82
+         9EpA==
+X-Gm-Message-State: AOAM532sw/2A87tp+cFL+9hlQeAzTcQ3H9DGCsjXkeJlNPHidiQU23Al
+        VKZG/rIxB1iva0dtht3z/zOevNHmyy05P/hvUh0=
+X-Google-Smtp-Source: 
+ ABdhPJy99/FHT6zeXiAeW8pt9PlVxSQustzITSBwdPIStntc1HUQSuUCUDUljn+nyEC3jv0BNwyMPNZxyCKzoS4QiwE=
+X-Received: by 2002:a0c:f109:: with SMTP id i9mr18665621qvl.154.1593030799673;
+ Wed, 24 Jun 2020 13:33:19 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:50 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-13-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 12/22] modpost: lto: strip .lto from module names
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>,
+        Bill Wendling <morbo@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With LTO, everything is compiled into LLVM bitcode, so we have to link
+each module into native code before modpost. Kbuild uses the .lto.o
+suffix for these files, which also ends up in module information. This
+change strips the unnecessary .lto suffix from the module name.
+
+Suggested-by: Bill Wendling <morbo@google.com>
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+---
+ scripts/mod/modpost.c    | 16 +++++++---------
+ scripts/mod/modpost.h    |  9 +++++++++
+ scripts/mod/sumversion.c |  6 +++++-
+ 3 files changed, 21 insertions(+), 10 deletions(-)
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 6aea65c65745..8352f8a1a138 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -17,7 +17,6 @@
+ #include <ctype.h>
+ #include <string.h>
+ #include <limits.h>
+-#include <stdbool.h>
+ #include <errno.h>
+ #include "modpost.h"
+ #include "../../include/linux/license.h"
+@@ -80,14 +79,6 @@ modpost_log(enum loglevel loglevel, const char *fmt, ...)
+ 		exit(1);
+ }
+ 
+-static inline bool strends(const char *str, const char *postfix)
+-{
+-	if (strlen(str) < strlen(postfix))
+-		return false;
+-
+-	return strcmp(str + strlen(str) - strlen(postfix), postfix) == 0;
+-}
+-
+ void *do_nofail(void *ptr, const char *expr)
+ {
+ 	if (!ptr)
+@@ -1975,6 +1966,10 @@ static char *remove_dot(char *s)
+ 		size_t m = strspn(s + n + 1, "0123456789");
+ 		if (m && (s[n + m] == '.' || s[n + m] == 0))
+ 			s[n] = 0;
++
++		/* strip trailing .lto */
++		if (strends(s, ".lto"))
++			s[strlen(s) - 4] = '\0';
+ 	}
+ 	return s;
+ }
+@@ -1998,6 +1993,9 @@ static void read_symbols(const char *modname)
+ 		/* strip trailing .o */
+ 		tmp = NOFAIL(strdup(modname));
+ 		tmp[strlen(tmp) - 2] = '\0';
++		/* strip trailing .lto */
++		if (strends(tmp, ".lto"))
++			tmp[strlen(tmp) - 4] = '\0';
+ 		mod = new_module(tmp);
+ 		free(tmp);
+ 	}
+diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
+index 3aa052722233..fab30d201f9e 100644
+--- a/scripts/mod/modpost.h
++++ b/scripts/mod/modpost.h
+@@ -2,6 +2,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <stdarg.h>
++#include <stdbool.h>
+ #include <string.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+@@ -180,6 +181,14 @@ static inline unsigned int get_secindex(const struct elf_info *info,
+ 	return info->symtab_shndx_start[sym - info->symtab_start];
+ }
+ 
++static inline bool strends(const char *str, const char *postfix)
++{
++	if (strlen(str) < strlen(postfix))
++		return false;
++
++	return strcmp(str + strlen(str) - strlen(postfix), postfix) == 0;
++}
++
+ /* file2alias.c */
+ extern unsigned int cross_build;
+ void handle_moddevtable(struct module *mod, struct elf_info *info,
+diff --git a/scripts/mod/sumversion.c b/scripts/mod/sumversion.c
+index d587f40f1117..760e6baa7eda 100644
+--- a/scripts/mod/sumversion.c
++++ b/scripts/mod/sumversion.c
+@@ -391,10 +391,14 @@ void get_src_version(const char *modname, char sum[], unsigned sumlen)
+ 	struct md4_ctx md;
+ 	char *fname;
+ 	char filelist[PATH_MAX + 1];
++	int postfix_len = 1;
++
++	if (strends(modname, ".lto.o"))
++		postfix_len = 5;
+ 
+ 	/* objects for a module are listed in the first line of *.mod file. */
+ 	snprintf(filelist, sizeof(filelist), "%.*smod",
+-		 (int)strlen(modname) - 1, modname);
++		 (int)strlen(modname) - postfix_len, modname);
+ 
+ 	buf = read_text_file(filelist);
+ 
+
+From patchwork Wed Jun 24 20:31:51 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263557
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D53BC433E2
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:31 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 2A49C20836
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="hwKULFJx"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406565AbgFXUd3 (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50602 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406546AbgFXUdX (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:23 -0400
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com
+ [IPv6:2607:f8b0:4864:20::b49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4FF15C061796
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:22 -0700 (PDT)
+Received: by mail-yb1-xb49.google.com with SMTP id e82so3496439ybh.12
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=AKMu7RfRr5zvA7HsB83o+xQyox7udGa4dX0knD98vpQ=;
+        b=hwKULFJxGC6lzKBnQLuceB0YfBkygKMN1Y7kZQBIXHCsEuVKl7k53XBbhlEet2kuY6
+         c5h57Jm4RTz3npco+GM34bS8OimyDEzCAs5RtXK9amKrkhc3iWeXVSSos5q0no8zlKoC
+         g7pLlix/dBDvLN2ZPktXFsba5h3mffSKhoE5+GmDS8Vr6JOxA4ewukdjiiGEPv8wdNVT
+         NFihuGuX3xW6/cOtws4+jn8A9DLBsarXxdSvLrg+AB01n3pWOgDMboQG92CgRsUahvu2
+         9lqJTUHzdlliTFgZhjxMp/9FS3YVs31mDAc+87qMDsCYIvXwnXEZPUfskY1g7XwXJnjL
+         oU3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=AKMu7RfRr5zvA7HsB83o+xQyox7udGa4dX0knD98vpQ=;
+        b=E1aR8Ax9rkai6wjcMi2GjG+rYdfXKfuB8hiv++gwG7FPiLj/4eGmnmrd6q9oWYqHXt
+         t2k4+U5a3Rd4uUMyJ8BkZwFCjSzM6ZyngS8vKmdoHrRE296CKKNmweNY7unH4kHqeQ0k
+         u8cL0r0JiD9mvKTORMfSk83G6P76MXehgCUbaLNqufHTf2yHRy1qyHHgrrLMWfwGOddD
+         RkVO13SgjfS6xbHhMpwea12eW/u8Qml9r76+Wer5DKjtXHrOiZiD2CJTPlNfB83xJUNH
+         YT8GADLLGgpM2K6ykK8kp8BkhVud1GQuwS1CEXcpWZlSfDbR5MmMHaQllU2dNU32iz/C
+         QzaA==
+X-Gm-Message-State: AOAM5325cIh9GaYSxwYTnObzT5TjOnu0PJ5RnQoysPxcZLMUeQR+8hAI
+        MRjYHTB7QM7JrIcNtBAuCtSsEw6uP5ENSnkdues=
+X-Google-Smtp-Source: 
+ ABdhPJwsJ60waNyWplHPwTwdw+lH2n4awv5MY2TpgjYhyfFuYQs+mtvKBzjvblN4Mn7p7o+48GiQMs2cNGX9hzUSV7k=
+X-Received: by 2002:a25:dcb:: with SMTP id 194mr50401188ybn.226.1593030801479;
+ Wed, 24 Jun 2020 13:33:21 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:51 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-14-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 13/22] scripts/mod: disable LTO for empty.c
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With CONFIG_LTO_CLANG, clang generates LLVM IR instead of ELF object
+files. As empty.o is used for probing target properties, disable LTO
+for it to produce an object file instead.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+---
+ scripts/mod/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/scripts/mod/Makefile b/scripts/mod/Makefile
+index 296b6a3878b2..b6e3b40c6eeb 100644
+--- a/scripts/mod/Makefile
++++ b/scripts/mod/Makefile
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ OBJECT_FILES_NON_STANDARD := y
++CFLAGS_REMOVE_empty.o += $(CC_FLAGS_LTO)
+ 
+ hostprogs	:= modpost mk_elfconfig
+ always-y	:= $(hostprogs) empty.o
+
+From patchwork Wed Jun 24 20:31:52 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263558
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 067FDC433E0
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:35 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id D3C762082F
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="QHLFKZjz"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406573AbgFXUdc (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50598 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406496AbgFXUdY (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:24 -0400
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com
+ [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16BC2C061795
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:24 -0700 (PDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id p22so3470557ybg.21
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=063/REsTpnFRr+cDI+sseVhgFckW5SG29uiho3UNZTY=;
+        b=QHLFKZjziQv1B4lTQJOFrFkeBBeD3vqMRAW+KU8uSJ0z8P5diTku752ppGYK+p1sHj
+         Tuqj5FmieFc5zewP3DRNS5iM40Pga5Yd012RZ1UJSub9OeGcQ/BjM9Xhswo2S+wawZKA
+         RoZrP4AKzJhPxHnp2kwUEq2iAcWJC9Jvd0o41DT/D0J5C0PT78vt0tH2KpFNFHvjKqOE
+         izzBiEOpzdtuThxfwOEyO+K5m3BsSaqVWi7OpscZsOWnWe/8qa7rh4O22Mfte1SMk6Qe
+         rW+Cnirb92ArG8+1lDPtjHVyv4CvsFhD6/kzdDW605IdVtQymCiQD3WRRYOvRlD/Mv+p
+         36IQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=063/REsTpnFRr+cDI+sseVhgFckW5SG29uiho3UNZTY=;
+        b=FHbWp0CsPhu2rhZnGQ5a/34SZjeLTrEkJ1fNYoF+nAqcSWVe5+nAjLZlZ02LzOVtr0
+         rqFp9JAVN/HN1F95NLEj+Ax1rQhbQRD9zn31OVnQzwjFSJIOXWwCgG2EAV8nC6iReN3d
+         7jWsc90yJkKb+KbkCa9/APgJGD2LYZFhDTEuJf3CsO3P1Hhn6eNm7wc8VtrORY8jxm6a
+         p6z4VQgTUu/HbJGXTvwWQYP7RS5o7lGdbPA5NiDSUMy0ouf4drldsmM9Q6wQJanmwruM
+         irlKk4evst+x05+Kcsl8x3YlL/TWV7ITIHqtC+XKWkIYQV4DaX2R7y6zPBAv3X3VIwkZ
+         AcxQ==
+X-Gm-Message-State: AOAM532suOYK9H8Jk6DWWkwgDNWcxCGR2fkyH4IfOZjgamPjWYPEtZwa
+        xUzsf2N/RnTjjHrHb5yq6XZTPiTM+D9T4mvIjt4=
+X-Google-Smtp-Source: 
+ ABdhPJxSD93X1bZbMxIVxbatDlNzo+plulwlXrP7mUhDGUyc2zpYsUnUjocqKRL/aFZ9kJnCfhHJEfDbrbY1YJULi70=
+X-Received: by 2002:a25:e8b:: with SMTP id 133mr46457083ybo.13.1593030803250;
+ Wed, 24 Jun 2020 13:33:23 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:52 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-15-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 14/22] efi/libstub: disable LTO
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+With CONFIG_LTO_CLANG, we produce LLVM bitcode instead of ELF object
+files. Since LTO is not really needed here and the Makefile assumes we
+produce an object file, disable LTO for libstub.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ drivers/firmware/efi/libstub/Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/firmware/efi/libstub/Makefile b/drivers/firmware/efi/libstub/Makefile
+index 75daaf20374e..95e12002cc7c 100644
+--- a/drivers/firmware/efi/libstub/Makefile
++++ b/drivers/firmware/efi/libstub/Makefile
+@@ -35,6 +35,8 @@ KBUILD_CFLAGS			:= $(cflags-y) -Os -DDISABLE_BRANCH_PROFILING \
+ 
+ # remove SCS flags from all objects in this directory
+ KBUILD_CFLAGS := $(filter-out $(CC_FLAGS_SCS), $(KBUILD_CFLAGS))
++# disable LTO
++KBUILD_CFLAGS := $(filter-out $(CC_FLAGS_LTO), $(KBUILD_CFLAGS))
+ 
+ GCOV_PROFILE			:= n
+ # Sanitizer runtimes are unavailable and cannot be linked here.
+
+From patchwork Wed Jun 24 20:31:53 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263566
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69ECFC433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:15 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 453FC2081A
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="D5jMBEz7"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406659AbgFXUeN (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:34:13 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50614 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406550AbgFXUd0 (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:26 -0400
+Received: from mail-qk1-x749.google.com (mail-qk1-x749.google.com
+ [IPv6:2607:f8b0:4864:20::749])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0993DC06179A
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:26 -0700 (PDT)
+Received: by mail-qk1-x749.google.com with SMTP id i62so2469570qkd.18
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=wwQ0FnciQOJFFrw9pZwNR1174M1Ii6KWK+Cwx1DZR0E=;
+        b=D5jMBEz7Lm5U+UfoGelxUyQqWOYc6Z+dLXzaDR1SoyT3D0mSDtKUxokHJAk6ca9TzV
+         4mueVog2jOcmVS+jVjlFOcthTwG/yiHbkE9KBrSSXn5wKv43C8TlR+Cgbt0KoNrOQO9O
+         owGlgSWarEMzSBvxtlWzfcQXQKNdv2ZE3V35XOQO9JLobrLz8Yl2Oqg2ofnVQSUcX7cV
+         WTnphEXJJam/USPXIaROhEV6UnjgXvvwGpug+fLsCxrQtPsDK3qYgboxAvYEWoFvxtr6
+         m6eXCYH8PEMH1MvefhDCIQOQ3Zw+2VmFPtKpPIPHPwUqkF/2Zm2/4J+lIul1mO034S+9
+         DBng==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=wwQ0FnciQOJFFrw9pZwNR1174M1Ii6KWK+Cwx1DZR0E=;
+        b=l0/YMajXrmz7qLudnKbgjfPKaIYA7bkkVxhvXm8gup/h85AvQ9kZFB5bfPV+314gtF
+         g4whtvJKt5vl4rRnQLvo+iHTEJt1h5zX/kzld0WbvrC7JGpfj2dbzKdJM5EpwQv26AiK
+         9n9udnlDSp+Y8KC/WYsWm1qlTbE0tiUrxsAOGvQ2ZaRslWqY01DBMGDG2OxdFkznEUM5
+         ILZ8bTzz8DnuHiE0ZxEo5jtBMoak6EXzMjb6lxpqDQAY/7z5swencwhVFdjx1GF8kSGu
+         MUVidakxrtN96C2L2alzg72nIC5UVG8qrsHu8x3CkUaU2FNtKwN37HkNYwPI6qonGHEW
+         VRvQ==
+X-Gm-Message-State: AOAM531KUQ0b1wbJHZgf8i8Eg9HXGqmpvxZQB5VrIiWAE8R3iH1P7huF
+        CRsx9+ne/iP6OCiEq+O18G47TncC4xGFGGZtdPU=
+X-Google-Smtp-Source: 
+ ABdhPJxdY2l3AI8wfRrd83iTVnOoqT0z2xypmyGa8SBbcpKlWTHBGxwu1psE5fER0U56oerLL9wNd1erMNW/Ru+uB28=
+X-Received: by 2002:ad4:4cc1:: with SMTP id i1mr3207160qvz.249.1593030805093;
+ Wed, 24 Jun 2020 13:33:25 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:53 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-16-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 15/22] drivers/misc/lkdtm: disable LTO for rodata.o
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Disable LTO for rodata.o to allow objcopy to be used to
+manipulate sections.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+Acked-by: Kees Cook <keescook@chromium.org>
+---
+ drivers/misc/lkdtm/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/misc/lkdtm/Makefile b/drivers/misc/lkdtm/Makefile
+index c70b3822013f..dd4c936d4d73 100644
+--- a/drivers/misc/lkdtm/Makefile
++++ b/drivers/misc/lkdtm/Makefile
+@@ -13,6 +13,7 @@ lkdtm-$(CONFIG_LKDTM)		+= cfi.o
+ 
+ KASAN_SANITIZE_stackleak.o	:= n
+ KCOV_INSTRUMENT_rodata.o	:= n
++CFLAGS_REMOVE_rodata.o		+= $(CC_FLAGS_LTO)
+ 
+ OBJCOPYFLAGS :=
+ OBJCOPYFLAGS_rodata_objcopy.o	:= \
+
+From patchwork Wed Jun 24 20:31:54 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263565
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64252C433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:08 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 4264E2080C
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:34:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="MpnW9sRj"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406651AbgFXUeH (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:34:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50630 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406562AbgFXUd3 (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:29 -0400
+Received: from mail-qt1-x84a.google.com (mail-qt1-x84a.google.com
+ [IPv6:2607:f8b0:4864:20::84a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1793C061796
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:27 -0700 (PDT)
+Received: by mail-qt1-x84a.google.com with SMTP id z26so2426944qto.15
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=Y5ofKWtW7b37fMwYLfPdHt3IGKVdbeQxX7e2DATRt0o=;
+        b=MpnW9sRj+tNBN3TDOB0E4bCD73iqcMpQvhC/oM2fJsIoYTK0vvtDvbgVlrqJ4oIK0n
+         hUkrO/tMTdR+N69BPrGONWoZVqr/PGTcGNGx7KoFKTb76Da/RvpOWxtl8VBxl/EZOrgt
+         5F9d69yFBuUFcdmnwtkp0D0VXoRY0s2h1Yr7OuAvRe5TUtgm7VwUMLCUarJXBYi3YH1w
+         ecgv9j79/kdCnb16j6h9hpiIIbrE81Rw7ot9VeyVU18a4/rQr8YcJy/lwnjNPlRdogMZ
+         F7b/c1lcoIWNDz5L2rbw2gGQuBQXJi1K+B1Nnm4G09LoPyPmFpMaZH6DTHw/IetIWtiC
+         Gcqg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=Y5ofKWtW7b37fMwYLfPdHt3IGKVdbeQxX7e2DATRt0o=;
+        b=D3xlS41dhsBIycE4N+o2jkiJ2Z1gts6gNkeLNGaKzNYJcr1Ja81gjrjFPVErxiXod0
+         q9T7eTX/Qb1aTpPOG8ejI52Y9cZxjeslZ+j6Ed7wLqTegq1YFkk7iqCvCpjX4yhaHVMd
+         YJSUJwUZRD+roIXG2agvcqHEyhPBVIWxmzeaOzYoIwg8xKcEg7QIVvf53ucs6UkLUQh4
+         /ImGbAeU6wVnI7Rl2ArnrwYjM6cAqdyCwCJf4flJ37tkI6ucCgilTv4JqLhl0Kzl1mal
+         FxQwa6fzVg5uGJ10+hCLjyMFORV7wUl5Bd63MmztxULlOkfK0DmrD2aF7GwOItgeIrVg
+         Ktlg==
+X-Gm-Message-State: AOAM533pm05lhUHDERenkVGjTKZsynYkkpgM9M6SrDxl0aWdFDoLdSFV
+        nYUYlmfi553AgbW6GgVLgvGiliuzRyyo5vRIamo=
+X-Google-Smtp-Source: 
+ ABdhPJyJOTQdckiniPybTRC01pO0CmjbQctgmf229uGzKfKGpm1EtRROJM8c/GsGd5lxXSpfxv2hqLta+vkNePH8WAU=
+X-Received: by 2002:ad4:4ae1:: with SMTP id cp1mr752045qvb.91.1593030807024;
+ Wed, 24 Jun 2020 13:33:27 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:54 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-17-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 16/22] arm64: export CC_USING_PATCHABLE_FUNCTION_ENTRY
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Since arm64 does not use -pg in CC_FLAGS_FTRACE with
+DYNAMIC_FTRACE_WITH_REGS, skip running recordmcount by
+exporting CC_USING_PATCHABLE_FUNCTION_ENTRY.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ arch/arm64/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/Makefile b/arch/arm64/Makefile
+index a0d94d063fa8..fc6c20a10291 100644
+--- a/arch/arm64/Makefile
++++ b/arch/arm64/Makefile
+@@ -115,6 +115,7 @@ endif
+ ifeq ($(CONFIG_DYNAMIC_FTRACE_WITH_REGS),y)
+   KBUILD_CPPFLAGS += -DCC_USING_PATCHABLE_FUNCTION_ENTRY
+   CC_FLAGS_FTRACE := -fpatchable-function-entry=2
++  export CC_USING_PATCHABLE_FUNCTION_ENTRY := 1
+ endif
+ 
+ # Default value
+
+From patchwork Wed Jun 24 20:31:55 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263563
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B9F2C433E0
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:56 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 4D99020836
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:56 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="BZIaPVfK"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406592AbgFXUdf (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:35 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50640 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406570AbgFXUdb (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:31 -0400
+Received: from mail-qk1-x74a.google.com (mail-qk1-x74a.google.com
+ [IPv6:2607:f8b0:4864:20::74a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BAC07C061798
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:29 -0700 (PDT)
+Received: by mail-qk1-x74a.google.com with SMTP id l6so2484258qkk.14
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=0gnBAHJLx9lqO/s+HwJkcFCIJr1VhaUKeKhoSxpNVYo=;
+        b=BZIaPVfK4mM5FaEgiOXOWzMHkzLTbGkEfiJOtrAEFVfi2gebzUCHiY5apTLMtfHkTM
+         l75+dKXwrfuQQVQD2stOWlndadQB1Zc6NUYn/q6QeMRTQnSqWTMGKUHewmR4G35OHvGp
+         b5/SiArvL0S+A3ZHxVqs+VYlHjtrFUCuNx8i9CZCiQNeqcMm9dSVbAn39gIUe0DUghnD
+         /f5TKe7Xx1FfkMjgZr3OsJkbEjKTvqcrDihZLf9/s8waWGOostMsdN7liEE23xBIKS3z
+         6Rz9E3efblWhUua9EUcgFt56u58fIXV0W2fm5zALG7kNoivW4ApgaZxGRBArCosaw+co
+         NR1g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=0gnBAHJLx9lqO/s+HwJkcFCIJr1VhaUKeKhoSxpNVYo=;
+        b=aQmrnN5z1/MQBa8lcr2XjYZU0U/B2QzsZxOJWPhYQ7oRMYyU/h3/nT7JelLVMaXsf2
+         AnNkTxaSfu8OWv/i5SCUSuYayBZ31XNnkI/6HBaWRqt4+K3imUct9FOPZzbu7RV1bCfD
+         e7otu0CuCoWkdH8fuUwa3jN3t60cLGXUK4IPSxOXyqxo7XEAsgzcnYKGY5B37SWEsDH1
+         +Vvr9P/hnkWICkHdJjIwjKsZxtQbeOT/wAkTkObvCgK5Ju9juNafT56xByatqVIRraeI
+         LYoUlkmyqrwvyzokooft6QcId1u/ev3q8ZZxxLbE2B8m8UBDkJroukaUhKih9a5c4Yx1
+         3dOA==
+X-Gm-Message-State: AOAM532BWRTpUZlPGMfrCpRkyaUEkhmyELZ9Dvx0FCA+NGwDA1DWj3cx
+        Y+2n0hFGabtzW0lqJG2z8KjJH7Mc9BqdlMUgvtc=
+X-Google-Smtp-Source: 
+ ABdhPJxTPJmHGzX5Q2m0yR96w4zaIPYDqCpLQon4kItXV3AD16e4+1m+5QFH8jaic4yItHA3V16FC+0hhVHCKPD3doc=
+X-Received: by 2002:a0c:ec4b:: with SMTP id
+ n11mr33232031qvq.103.1593030808901;
+ Wed, 24 Jun 2020 13:33:28 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:55 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-18-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 17/22] arm64: vdso: disable LTO
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Filter out CC_FLAGS_LTO for the vDSO.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ arch/arm64/kernel/vdso/Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
+index 556d424c6f52..cfad4c296ca1 100644
+--- a/arch/arm64/kernel/vdso/Makefile
++++ b/arch/arm64/kernel/vdso/Makefile
+@@ -29,8 +29,8 @@ ldflags-y := -shared -nostdlib -soname=linux-vdso.so.1 --hash-style=sysv \
+ ccflags-y := -fno-common -fno-builtin -fno-stack-protector -ffixed-x18
+ ccflags-y += -DDISABLE_BRANCH_PROFILING
+ 
+-CFLAGS_REMOVE_vgettimeofday.o = $(CC_FLAGS_FTRACE) -Os $(CC_FLAGS_SCS)
+-KBUILD_CFLAGS			+= $(DISABLE_LTO)
++CFLAGS_REMOVE_vgettimeofday.o = $(CC_FLAGS_FTRACE) -Os $(CC_FLAGS_SCS) \
++				$(CC_FLAGS_LTO)
+ KASAN_SANITIZE			:= n
+ UBSAN_SANITIZE			:= n
+ OBJECT_FILES_NON_STANDARD	:= y
+
+From patchwork Wed Jun 24 20:31:56 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263559
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0D1DC433E1
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:39 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 8505520857
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:39 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="UWquwQhX"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406605AbgFXUdi (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50650 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406580AbgFXUdd (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:33 -0400
+Received: from mail-qv1-xf49.google.com (mail-qv1-xf49.google.com
+ [IPv6:2607:f8b0:4864:20::f49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC940C061796
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:31 -0700 (PDT)
+Received: by mail-qv1-xf49.google.com with SMTP id v20so2488804qvt.15
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=tPGFlpm4UBb0TochKjxo1pWDKJKPOqpdcyA67hsa/L0=;
+        b=UWquwQhXAU0FVu4xLvS68q0H5KMxmC2ClvghZJMO4mnRx07EpAl76zEcZBzo4oeEr0
+         7QXs8i2/+8O4w4SxtWsY3wN7GwxBdmr8ei0LaPar71G/kQf7fHaujWILvZ2kj0I3OQnr
+         XU2/mlOZsNQvQSHPQNf0o+Qm3V8oiEUyLdtK1wUmyBN7hxR5xoSfaX9vD6ylX1d8MUtg
+         8oc06ZHQnmcIQFLeYAyeQNfJHs0QNV6Vk/mbPBcPZcsZ2TSgTBf3waXZc3e781NAKP/5
+         u74kiQ+ly65wZm433U8lBfaxNpuvW2v+K3io3UW/wCh82HySe+7ylz3czOz1zaRbngJk
+         H88w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=tPGFlpm4UBb0TochKjxo1pWDKJKPOqpdcyA67hsa/L0=;
+        b=WxKYNDpFB36JKgHlOw35ijGnmO19SPj+OOUbrHNoW+iPub0mvEhNLXe0lPZSYc9Pja
+         +SzDzVNMAWgl5w4KIm4V25IF9WUuCQXzbGyUvIL7u9345VpYqnFC1LcwFQYdTVSw+dIi
+         F2oWQriWJBGJ2QHie4eUMBKYqGQQZV0CO781eztzdJc/vv5lCbS9UVEOUCavUoLzWvI5
+         /ckBDMFdqyW/ADWLq12d1wHmmhHN7lreN9b9OHlKErj0cJiVlced/fYIw1BlDyICfzCp
+         MqJnGMowFNn7herh4/GAnxAHMTjkZE0kMvQt3WZ48TaJcz6cDXyXnQXiibaA2O3DEB+x
+         7cNQ==
+X-Gm-Message-State: AOAM533HA0ZywugOnqc7E4/9RgPEzuaub+sWvUtwi02xOmP8RPUtx5uc
+        5E5NXycIODkjSLk/+tRypAU56bv8XyfK22iydK4=
+X-Google-Smtp-Source: 
+ ABdhPJwOmVj5AVipomAFkeyuweymmty039I+YIpShmyF/4KLduyGozlOwEpdaQAyz+L93rzFTlrhSA4YsbqHyVAyM6Y=
+X-Received: by 2002:a0c:8482:: with SMTP id m2mr33607693qva.65.1593030810891;
+ Wed, 24 Jun 2020 13:33:30 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:56 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-19-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 18/22] arm64: allow LTO_CLANG and THINLTO to be selected
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Allow CONFIG_LTO_CLANG and CONFIG_THINLTO to be enabled.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ arch/arm64/Kconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index a4a094bedcb2..e1961653964d 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -72,6 +72,8 @@ config ARM64
+ 	select ARCH_USE_SYM_ANNOTATIONS
+ 	select ARCH_SUPPORTS_MEMORY_FAILURE
+ 	select ARCH_SUPPORTS_SHADOW_CALL_STACK if CC_HAVE_SHADOW_CALL_STACK
++	select ARCH_SUPPORTS_LTO_CLANG
++	select ARCH_SUPPORTS_THINLTO
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_SUPPORTS_INT128 if CC_HAS_INT128 && (GCC_VERSION >= 50000 || CC_IS_CLANG)
+ 	select ARCH_SUPPORTS_NUMA_BALANCING
+
+From patchwork Wed Jun 24 20:31:57 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263564
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1F6FC433E0
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:59 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id AC83E2080C
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="QdroIDfh"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406643AbgFXUd6 (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50656 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406590AbgFXUdf (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:35 -0400
+Received: from mail-qt1-x84a.google.com (mail-qt1-x84a.google.com
+ [IPv6:2607:f8b0:4864:20::84a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3F04C061573
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:33 -0700 (PDT)
+Received: by mail-qt1-x84a.google.com with SMTP id e4so2429501qtd.13
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=A7cPf0bNRtzZYfE1vc1rDopHSIr0k7cT2ZUm+OLZjv0=;
+        b=QdroIDfhWPMl7iB8nPdG8F9r+Jm4224Qh0WRTBS1efFhFRpvTdOpw1Wqlz8qn+FYQH
+         CFYve9pYyAVcIOznwtpq4QOlb+uiIUyfq16PYsXpTvWntxsZXcxPZ5lIUBkOt4NXo1Sm
+         PFaSdzav1KtGvpCE5Ob7mVSvukaW8AVYgaIRlUr52jjyj1zFJ6R084rNzCDR/va5Iujh
+         UoakKiURAbGW8xR0S2+Nw0cEeLy4uPMRYJtFclzKSks+5zyjfrBf44Qy3NgDTq9URhoR
+         JWQuukFmtbdz9DrqDBlQZj0VkdPwnrqlxkdn89XzL10tIPUOY5/Zz6v6QbMuu+nDt0wT
+         e8dA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=A7cPf0bNRtzZYfE1vc1rDopHSIr0k7cT2ZUm+OLZjv0=;
+        b=PHEcPhUsmQhBX54aHTSNvTTix7W+KadUu/eflJnOyMoWYMWcyJ9xfxBWUnOo1p7OY7
+         uzyAHknM3NvVLGVNvqb9Y9RLcaewbxd8Z4NJGOZwfypurkryz2HzV0hnF6BfN2H0cB3y
+         2DIxYOXSkhVB8SIknk4Xf471odDu2emZ8dlun0zV6ZTUP9pu/oDOLCP8+EZU30omS/Kv
+         D6PlWG3Ebxj8jZ7FsemCUT9VFe4S8LuQ4xsKbeBxrQTbTORy7LOpBgJPBeElo6+me1da
+         lpimdGFPW8SmVtdRH9tgvc2djPqbVsR5mkQYyY+5xSin3GrSKzqJf1vEyS22GHZuBgc3
+         I99Q==
+X-Gm-Message-State: AOAM532g9R/VE5u+rgTEhldYRppH/EAmMuvGk0qyYTjyCTTLzxXGKhki
+        UHBS5uLcfEjwuOEAkvCkIHRNNT+ymTipxvQZkZ8=
+X-Google-Smtp-Source: 
+ ABdhPJzex3csdM9Cm9Zm5kqXnJN1Q6l9vC80id+c8eDzSpyHr7eNMt7lOs0z0JRAKDBh+QA/j3WYj56ZTQDnUtqmFPY=
+X-Received: by 2002:a0c:fcca:: with SMTP id
+ i10mr21455652qvq.150.1593030812853;
+ Wed, 24 Jun 2020 13:33:32 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:57 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-20-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 19/22] x86, vdso: disable LTO only for vDSO
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Remove the undefined DISABLE_LTO flag from the vDSO, and filter out
+CC_FLAGS_LTO flags instead where needed.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ arch/x86/entry/vdso/Makefile | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/entry/vdso/Makefile b/arch/x86/entry/vdso/Makefile
+index 04e65f0698f6..67f60662830a 100644
+--- a/arch/x86/entry/vdso/Makefile
++++ b/arch/x86/entry/vdso/Makefile
+@@ -9,8 +9,6 @@ ARCH_REL_TYPE_ABS := R_X86_64_JUMP_SLOT|R_X86_64_GLOB_DAT|R_X86_64_RELATIVE|
+ ARCH_REL_TYPE_ABS += R_386_GLOB_DAT|R_386_JMP_SLOT|R_386_RELATIVE
+ include $(srctree)/lib/vdso/Makefile
+ 
+-KBUILD_CFLAGS += $(DISABLE_LTO)
+-
+ # Sanitizer runtimes are unavailable and cannot be linked here.
+ KASAN_SANITIZE			:= n
+ UBSAN_SANITIZE			:= n
+@@ -92,7 +90,7 @@ ifneq ($(RETPOLINE_VDSO_CFLAGS),)
+ endif
+ endif
+ 
+-$(vobjs): KBUILD_CFLAGS := $(filter-out $(GCC_PLUGINS_CFLAGS) $(RETPOLINE_CFLAGS),$(KBUILD_CFLAGS)) $(CFL)
++$(vobjs): KBUILD_CFLAGS := $(filter-out $(CC_FLAGS_LTO) $(GCC_PLUGINS_CFLAGS) $(RETPOLINE_CFLAGS),$(KBUILD_CFLAGS)) $(CFL)
+ 
+ #
+ # vDSO code runs in userspace and -pg doesn't help with profiling anyway.
+@@ -150,6 +148,7 @@ KBUILD_CFLAGS_32 := $(filter-out -fno-pic,$(KBUILD_CFLAGS_32))
+ KBUILD_CFLAGS_32 := $(filter-out -mfentry,$(KBUILD_CFLAGS_32))
+ KBUILD_CFLAGS_32 := $(filter-out $(GCC_PLUGINS_CFLAGS),$(KBUILD_CFLAGS_32))
+ KBUILD_CFLAGS_32 := $(filter-out $(RETPOLINE_CFLAGS),$(KBUILD_CFLAGS_32))
++KBUILD_CFLAGS_32 := $(filter-out $(CC_FLAGS_LTO),$(KBUILD_CFLAGS_32))
+ KBUILD_CFLAGS_32 += -m32 -msoft-float -mregparm=0 -fpic
+ KBUILD_CFLAGS_32 += $(call cc-option, -fno-stack-protector)
+ KBUILD_CFLAGS_32 += $(call cc-option, -foptimize-sibling-calls)
+
+From patchwork Wed Jun 24 20:31:58 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263560
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A28AFC433E0
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:42 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 7FDDE20857
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="ZOpDZdrG"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406620AbgFXUdk (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50676 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406594AbgFXUdf (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:35 -0400
+Received: from mail-qt1-x849.google.com (mail-qt1-x849.google.com
+ [IPv6:2607:f8b0:4864:20::849])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5DADAC061798
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:35 -0700 (PDT)
+Received: by mail-qt1-x849.google.com with SMTP id c26so2434600qtq.6
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=39oSk63TLcybcU14SgKvCDK3H6XzHtEtduXPCr/44ss=;
+        b=ZOpDZdrGdHh1ZJonf0E/5dDbHERSe6TbCFmdB2U6jPIiwcNANMbLkyJvmpov2k2xOy
+         UVWsqBFfeytL+Hgc/oR6FsAd9G11hUgAXJsCWawlND5MVBWd0mWD5Dc0EmC9ABVsRrwk
+         SuNrnMuN7GhuqelKUl2otkPK4jEY0L0Bm6whau77q3fZbpcyNGO1mB7+EOqkQJEsefdW
+         zLLLl7cpOUj8LxrFN5V51O7w7SPh0uXELCQRumvXzfHQsZ4xwEEn1hGOm5BLrbAhkADT
+         mOeNJdhYt+ZgbwtN0PEW0MGrw4iretwo3Lq6tyaoaAFryjr8t8wGNBEOp88gmFSQ4dk6
+         T0OA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=39oSk63TLcybcU14SgKvCDK3H6XzHtEtduXPCr/44ss=;
+        b=OBRlqatUuILhAO6T9tCRmEuiB9l1hSrZo39n/jnbjX8gLANOWoujxTenQcndm+XOew
+         sCERYA6cn4uqf7xOxPZVCpsqqWPI4IXWWbDPDPub5KjK9myg0irgTBV1AFx9u5sCz5e7
+         /N1ARp8W85Hc6lAM05HrVOqQY6N2WFXwnL+0D1pgoYGAgcDuH+vrvc0v+b/jnvbNynrv
+         Y+DzHvcN9NM+QrsY6w1x86x3XCG6Oh/wxd08xA7Q96ISm5HHKKST642YxtQVgm93+plD
+         TyOlEuj4xmFk9Jm3Uq651cv6yPKDG/ZF+hYNLaGwbwG2Upga8nbiKXHv+AnQsHpZe8b0
+         QKzg==
+X-Gm-Message-State: AOAM531oYyp36ni6XC8sjQP0gwllOOJSD7y1aMHGQ5fpiUKm3XGF1FSa
+        n6Tzbkrn4MFnrIHz/lqhcQa50Vwym1sGtEXKkqg=
+X-Google-Smtp-Source: 
+ ABdhPJzI2BesdcUkxRPNmsNayE+wa07nV1TDxi5hKxZeEiEV2jo0nWBCJ/1Nmj0kWHXA23yigO5wL2sAexNblZcBJws=
+X-Received: by 2002:ad4:52e2:: with SMTP id p2mr33679309qvu.100.1593030814530;
+ Wed, 24 Jun 2020 13:33:34 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:58 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-21-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 20/22] x86, ftrace: disable recordmcount for ftrace_make_nop
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Ignore mcount relocations in ftrace_make_nop.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ arch/x86/kernel/ftrace.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 51504566b3a6..c3b28b81277b 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -121,6 +121,7 @@ ftrace_modify_code_direct(unsigned long ip, const char *old_code,
+ 	return 0;
+ }
+ 
++__nomcount
+ int ftrace_make_nop(struct module *mod, struct dyn_ftrace *rec, unsigned long addr)
+ {
+ 	unsigned long ip = rec->ip;
+
+From patchwork Wed Jun 24 20:31:59 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263562
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9069C433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:52 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 947BC2080C
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="A1OVxmoh"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406635AbgFXUdv (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50682 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406608AbgFXUdi (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:38 -0400
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com
+ [IPv6:2607:f8b0:4864:20::b49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 130E5C061798
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:37 -0700 (PDT)
+Received: by mail-yb1-xb49.google.com with SMTP id j3so3539847yba.14
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=vVvCAj3rXahkiTyB3fdf4JdbPFhKMTMNyBg/koJzOHM=;
+        b=A1OVxmohREiIQE9uWobns3DZjU2BjnF5/uRv4vfcaF2sodOxkh4sxle+6JGl3ADtOZ
+         3fmTbkzX8W7ahG1bTGpXMMU9CdKC8UZUye2VucpEx7325i3QESTUcI83ndSOc6E8Kmzu
+         N5PlhLkCWO4j4sIvQEk9eacQtD+bX2UY3Y5a4I1dsdat2Jm3e0YTj4ppvoCyl2YlPdbY
+         ZyEZAXO2uSqBN9R05BjPoqjam4RsnD1PfD+i8NAuT2L+OMarD3RxLispCXwkir37c5B5
+         L+Lu+ZWTjo7NmJwPgVCLx0NgAf7Qq1Qws+DG9FZOXnsn8vOlmmibTipSbU4GNNmhC8bb
+         0u7A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=vVvCAj3rXahkiTyB3fdf4JdbPFhKMTMNyBg/koJzOHM=;
+        b=mV5NhelQlSDKLBaF/Ncy0o3g0+MGdfrEG8AX/tW/1TEUXDK3B3KWl6rVrjQSQSlLcn
+         YNi0cW0o1vGi4ATCd2srbCf3ah1iEXjPKbojXzw0tQ2TYW+DkyaGWuE9FRb8W+E79Miu
+         2EJjA1djWBsAzaimmiJ41b8WDoxPHRWLoBAzoVmxwnpOuRZgkij3ioktNa3TG607yENv
+         Zi5B2edJyUXwWa5m+LkId3JveqPW/5taIK3lDxdV1kIhxjNzjSNK2yvJwbOeWyVGb4Sg
+         iFRAEWm7Mw7MWJJMbYRuQI6ON4D59pSnBuqFkfm0AWg+PjI8kWWISwivlKP0smkqUcRv
+         2ZAg==
+X-Gm-Message-State: AOAM531iuZmbbT/9XvfGH3p14EiIx18tOSP7rSksBK+Tf9Xxxs1ZpNhu
+        HsyoKM7VfCrW/N/6qmUf9dEx95rR63uyiwatbDc=
+X-Google-Smtp-Source: 
+ ABdhPJxFwd5sYHcpKP7HH5wq1l18/N0yS86uUmxUS0eTeAHpLUaXB5pBxjwc02CZmZmfKSgokc5xwqXiDOu/w8PP8nk=
+X-Received: by 2002:a25:7450:: with SMTP id
+ p77mr23380392ybc.155.1593030816256;
+ Wed, 24 Jun 2020 13:33:36 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:31:59 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-22-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 21/22] x86, relocs: Ignore L4_PAGE_OFFSET relocations
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+L4_PAGE_OFFSET is a constant value, so don't warn about absolute
+relocations.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ arch/x86/tools/relocs.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/x86/tools/relocs.c b/arch/x86/tools/relocs.c
+index ce7188cbdae5..8f3bf34840ce 100644
+--- a/arch/x86/tools/relocs.c
++++ b/arch/x86/tools/relocs.c
+@@ -47,6 +47,7 @@ static const char * const sym_regex_kernel[S_NSYMTYPES] = {
+ 	[S_ABS] =
+ 	"^(xen_irq_disable_direct_reloc$|"
+ 	"xen_save_fl_direct_reloc$|"
++	"L4_PAGE_OFFSET|"
+ 	"VDSO|"
+ 	"__crc_)",
+ 
+
+From patchwork Wed Jun 24 20:32:00 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sami Tolvanen <samitolvanen@google.com>
+X-Patchwork-Id: 1263561
+Return-Path: <SRS0=sD2I=AF=vger.kernel.org=linux-kernel-owner@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 574F3C433DF
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:46 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 3925F2080C
+	for <linux-kernel@archiver.kernel.org>; Wed, 24 Jun 2020 20:33:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.b="qDi1kJQp"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S2406628AbgFXUdp (ORCPT
+        <rfc822;linux-kernel@archiver.kernel.org>);
+        Wed, 24 Jun 2020 16:33:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50690 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406611AbgFXUdj (ORCPT
+        <rfc822;linux-kernel@vger.kernel.org>);
+        Wed, 24 Jun 2020 16:33:39 -0400
+Received: from mail-qv1-xf49.google.com (mail-qv1-xf49.google.com
+ [IPv6:2607:f8b0:4864:20::f49])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C65DCC061799
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:38 -0700 (PDT)
+Received: by mail-qv1-xf49.google.com with SMTP id r19so2352661qvz.7
+        for <linux-kernel@vger.kernel.org>;
+ Wed, 24 Jun 2020 13:33:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=tvg1Fbryi0kMABLSJZV+2LlG9cMfXZohRvKr2b10/ew=;
+        b=qDi1kJQp6Ay8PowzBhvgcAgfJKyEY22DJ3SehuRqjn/jA9tuCP3XgBFwyavVII/8H8
+         +qDUOb2y6OKXwsbI5cxksI3QZk1MHXAA03OHDhdjTbrRcF9EMaP1PLIUJPhY0/usboE5
+         WysdzKDHLGBWRBK078rHZqlAErXt2qVt2sq358db2q+vTaEhfb2Ztz8s+Npc56SUR/GU
+         zam+aC0Fi9TXcLLkm/vCwtmB9CZFKkHlUgIzUuWu5eMrmtKdAXKTOQSgFxHw8mPgwD7i
+         VrVAm6xkIce/iluM0BjvQMvc/W7Io0XF/CLOQ/Xz7mhbTAKzZSonAVtghl5cbcwT3k0W
+         qRXw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=tvg1Fbryi0kMABLSJZV+2LlG9cMfXZohRvKr2b10/ew=;
+        b=KGDYj7rnL8tiRx4vx1NwY21mBN3FM6BGyKJA1yMvLbNm4lIUlLw9YzsfcervjZoM+h
+         kaggur5NcSo5TP5tx0YzuFzM4T9WabW/x/pkPeXoK6Het9HwkTZ2hx9BgUkPGk3C2toY
+         s2LbX2tu0uNOsR33tACPACsu3xrEXkSsM37+4QD4/QGJTWvSomqpD3diIN4RDh9dLGu3
+         fUN7WVsdjPqiSrNYyh9tHpt3GNL7i5kin7gQrTPzweD47PHi+WN8o79snoxUgHEWXNf5
+         B+NiI7VEqyIDtIbqvgiON5qenqz0PKyGwWQLAnL5a/GAhTrKdH/KwxhbULP3Wxv7sexO
+         dokg==
+X-Gm-Message-State: AOAM533V5IoW4mAUrEUMjpwTslWS+1oh1BuoE9PkoFGNpPx8u1P9yRjV
+        gWxB4abEjMcOmCDc/VQFVE3pU/VFaO3eD7X/dBE=
+X-Google-Smtp-Source: 
+ ABdhPJyl5JOyQAzphL8fSerF19PzJDrN7smlmqxmskm8wB3636prwAzfuisg2Ek7D9XrgzzDEO8QBVxE0nwET9TpJnI=
+X-Received: by 2002:a05:6214:846:: with SMTP id
+ dg6mr31350632qvb.210.1593030818021;
+ Wed, 24 Jun 2020 13:33:38 -0700 (PDT)
+Date: Wed, 24 Jun 2020 13:32:00 -0700
+In-Reply-To: <20200624203200.78870-1-samitolvanen@google.com>
+Message-Id: <20200624203200.78870-23-samitolvanen@google.com>
+Mime-Version: 1.0
+References: <20200624203200.78870-1-samitolvanen@google.com>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+Subject: [PATCH 22/22] x86, build: allow LTO_CLANG and THINLTO to be selected
+From: Sami Tolvanen <samitolvanen@google.com>
+To: Masahiro Yamada <masahiroy@kernel.org>,
+        Will Deacon <will@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Paul E. McKenney" <paulmck@kernel.org>,
+        Kees Cook <keescook@chromium.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        clang-built-linux@googlegroups.com,
+        kernel-hardening@lists.openwall.com, linux-arch@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kbuild@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        x86@kernel.org, Sami Tolvanen <samitolvanen@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+Allow CONFIG_LTO_CLANG and CONFIG_THINLTO to be enabled.
+
+Signed-off-by: Sami Tolvanen <samitolvanen@google.com>
+---
+ arch/x86/Kconfig  | 2 ++
+ arch/x86/Makefile | 5 +++++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 6a0cc524882d..df335b1f9c31 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -92,6 +92,8 @@ config X86
+ 	select ARCH_SUPPORTS_ACPI
+ 	select ARCH_SUPPORTS_ATOMIC_RMW
+ 	select ARCH_SUPPORTS_NUMA_BALANCING	if X86_64
++	select ARCH_SUPPORTS_LTO_CLANG		if X86_64
++	select ARCH_SUPPORTS_THINLTO		if X86_64
+ 	select ARCH_USE_BUILTIN_BSWAP
+ 	select ARCH_USE_QUEUED_RWLOCKS
+ 	select ARCH_USE_QUEUED_SPINLOCKS
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 00e378de8bc0..a1abc1e081ad 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -188,6 +188,11 @@ ifdef CONFIG_X86_64
+ KBUILD_LDFLAGS += $(call ld-option, -z max-page-size=0x200000)
+ endif
+ 
++ifdef CONFIG_LTO_CLANG
++KBUILD_LDFLAGS	+= -plugin-opt=-code-model=kernel \
++		   -plugin-opt=-stack-alignment=$(if $(CONFIG_X86_32),4,8)
++endif
++
+ # Workaround for a gcc prelease that unfortunately was shipped in a suse release
+ KBUILD_CFLAGS += -Wno-sign-compare
+ #

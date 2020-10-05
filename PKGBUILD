@@ -30,6 +30,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '0024-arm64-dts-rockchip-setup-USB-type-c-port-as-dual-dat.patch'
         'overclock.patch'
         'pbp-power-button-as-delete.patch'
+        'add-support-for-Clang-LTO.patch'
         'config'
         'linux.preset'
         '60-linux.hook'
@@ -48,6 +49,7 @@ md5sums=('0e5c4c15266218ef26c50fac0016095b'
          '73803b563b9e794a3b495524de99ced7'
          '81d70a76169189a6f029ef717cedcf4d'
          '3fd917748d2d2843120fa6f2d56c5c5f'
+         '606ae56424c6ba68867d0b3d7301850d'
          '607f5045801508b5a47952959e75dc32'
          '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
@@ -73,6 +75,7 @@ prepare() {
   # misc. patches
   patch -Np1 -i "${srcdir}/overclock.patch"
   patch -Np1 -i "${srcdir}/pbp-power-button-as-delete.patch"
+  patch -Np1 -i "${srcdir}/add-support-for-Clang-LTO.patch"
 
   cat "${srcdir}/config" > ./.config
 
