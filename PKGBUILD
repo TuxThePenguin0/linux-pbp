@@ -18,6 +18,7 @@ makedepends=('clang>=11.0.0' 'llvm>=11.0.0' 'lld>=11.0.0' 'xmlto' 'docbook-xsl' 
 options=('!strip')
 source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         "http://www.kernel.org/pub/linux/kernel/v5.x/patch-${pkgver}.xz"
+        '0001-pwm-rockchip-Keep-enabled-PWMs-running-while-probing.patch'
         '0004-tty-serdev-support-shutdown-op.patch'
         '0005-bluetooth-hci_serdev-Clear-registered-bit-on-unregis.patch'
         '0006-bluetooth-hci_bcm-disable-power-on-shutdown.patch'
@@ -37,6 +38,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '90-linux.hook')
 md5sums=('0e5c4c15266218ef26c50fac0016095b'
          '1f276bf9d1bc12215179a4681c29a573'
+         '698946c973f5a4adbef281d760c478bd'
          '11e653f50135c1e9fa703118fa7f2623'
          '05c7919f7fc1019e99e6965559bde5d5'
          '894a88a9579b22c22747b1748f181bb9'
@@ -61,6 +63,7 @@ prepare() {
   # add upstream patch
   patch -Np1 -i "${srcdir}/patch-${pkgver}"
 
+  patch -Np1 -i "${srcdir}/0001-pwm-rockchip-Keep-enabled-PWMs-running-while-probing.patch"
   patch -Np1 -i "${srcdir}/0004-tty-serdev-support-shutdown-op.patch"
   patch -Np1 -i "${srcdir}/0005-bluetooth-hci_serdev-Clear-registered-bit-on-unregis.patch"
   patch -Np1 -i "${srcdir}/0006-bluetooth-hci_bcm-disable-power-on-shutdown.patch"

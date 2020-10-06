@@ -1,0 +1,48 @@
+From 7599750a79d17f2554abb71a95dd724f5e9efa57 Mon Sep 17 00:00:00 2001
+From: Simon South <simon@simonsouth.net>
+Date: Fri, 18 Sep 2020 13:51:46 -0400
+Subject: [PATCH] pwm: rockchip: Keep enabled PWMs running while probing
+
+Following commit cfc4c18 ("pwm: Read initial hardware state at request
+time") the Rockchip PWM driver can no longer assume a device's state
+information has been populated after a call to pwmchip_add().
+Consequently, the test in rockchip_pwm_probe() intended to prevent the
+driver from stopping PWM devices already enabled by the bootloader no
+longer functions reliably and can lead to the kernel hanging during
+startup.
+
+With this change the driver explicitly fetches the state of a device
+before attempting to determine whether or not it is enabled, fixing
+this issue.
+
+Signed-off-by: Simon South <simon@simonsouth.net>
+---
+ drivers/pwm/pwm-rockchip.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/pwm/pwm-rockchip.c b/drivers/pwm/pwm-rockchip.c
+index eb8c9cb64..098e94335 100644
+--- a/drivers/pwm/pwm-rockchip.c
++++ b/drivers/pwm/pwm-rockchip.c
+@@ -288,6 +288,7 @@ static int rockchip_pwm_probe(struct platform_device *pdev)
+ 	const struct of_device_id *id;
+ 	struct rockchip_pwm_chip *pc;
+ 	struct resource *r;
++	u32 enable_conf, ctrl;
+ 	int ret, count;
+ 
+ 	id = of_match_device(rockchip_pwm_dt_ids, &pdev->dev);
+@@ -362,7 +363,9 @@ static int rockchip_pwm_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* Keep the PWM clk enabled if the PWM appears to be up and running. */
+-	if (!pwm_is_enabled(pc->chip.pwms))
++	enable_conf = pc->data->enable_conf;
++	ctrl = readl_relaxed(pc->base + pc->data->regs.ctrl);
++	if ((ctrl & enable_conf) != enable_conf)
+ 		clk_disable(pc->clk);
+ 
+ 	return 0;
+-- 
+2.28.0
+
